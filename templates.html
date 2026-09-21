@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Templates | ResumeCV - Free ATS-Friendly Templates</title>
+  <meta name="description" content="Browse 50+ free ATS-friendly resume templates. Choose from modern, classic, creative, and minimal designs." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%232DC08D'/><path d='M6 7h7a3.5 3.5 0 0 1 0 7H6V7z' fill='white'/><path d='M6 14h5l3.5 5H9.5L6 14z' fill='white' opacity='0.7'/></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/templates.css" />
+</head>
+<body>
+
+  <!-- HEADER (same as main) -->
+  <header class="header" id="header">
+    <div class="header-inner container">
+      <a href="index.html" class="logo" aria-label="ResumeCV Home">
+        <svg width="140" height="28" viewBox="0 0 140 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="#2DC08D"/>
+          <path d="M8 8h8a4 4 0 0 1 0 8H8V8z" fill="white"/>
+          <path d="M8 16h6l4 6H12L8 16z" fill="white" opacity="0.7"/>
+          <text x="36" y="20" font-family="Rubik, sans-serif" font-weight="700" font-size="18" fill="#1a1a2e">Resume<tspan fill="#2DC08D">CV</tspan></text>
+        </svg>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="builder.html" class="nav-link plain">Resume Builder</a>
+        <a href="templates.html" class="nav-link plain" style="color: #2DC08D;">Templates</a>
+        <a href="#" class="nav-link plain">Pricing</a>
+        <a href="#" class="nav-link plain">Blog</a>
+      </nav>
+      <div class="header-actions">
+        <a href="builder.html" class="btn-ghost">Log in</a>
+        <a href="builder.html" class="btn-primary">Build my resume</a>
+      </div>
+      <button class="mobile-menu-btn" id="mobileMenuBtn"><span></span><span></span><span></span></button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <nav>
+        <a href="builder.html">AI Resume Builder</a>
+        <a href="templates.html">Templates</a>
+        <a href="#">Pricing</a>
+        <a href="#">Blog</a>
+        <a href="builder.html" class="btn-primary full-w">Build my resume</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- TEMPLATES HERO -->
+  <section class="templates-hero">
+    <div class="container">
+      <div class="templates-hero-content">
+        <div class="section-badge" style="display:inline-block;">50+ Free Templates</div>
+        <h1>Professional Resume <span class="gradient-text">Templates</span></h1>
+        <p>Choose from our collection of ATS-friendly templates. Every template is designed by professionals, tested by recruiters, and optimized for modern hiring systems.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATES BROWSER -->
+  <section class="templates-browser">
+    <div class="container">
+      <!-- SEARCH + FILTER -->
+      <div class="browser-controls">
+        <div class="search-wrap">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#9ca3af" stroke-width="1.5"/><path d="M11 11l3 3" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input type="text" class="search-input" id="templateSearch" placeholder="Search templates (e.g., 'modern', 'minimal')..." />
+        </div>
+
+        <div class="filter-tabs" id="categoryTabs">
+          <button class="filter-tab active" data-cat="all">All (50+)</button>
+          <button class="filter-tab" data-cat="modern">Modern</button>
+          <button class="filter-tab" data-cat="classic">Classic</button>
+          <button class="filter-tab" data-cat="creative">Creative</button>
+          <button class="filter-tab" data-cat="minimal">Minimal</button>
+          <button class="filter-tab" data-cat="ats">ATS-Friendly</button>
+          <button class="filter-tab" data-cat="tech">Tech</button>
+        </div>
+
+        <div class="sort-wrap">
+          <select class="sort-select" id="sortSelect">
+            <option value="popular">Most Popular</option>
+            <option value="newest">Newest First</option>
+            <option value="az">A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FEATURED -->
+      <div class="featured-templates" id="featuredTemplates">
+        <h2 class="section-sub-title">⭐ Featured Templates</h2>
+        <div class="featured-grid" id="featuredGrid"></div>
+      </div>
+
+      <!-- ALL TEMPLATES -->
+      <div id="allTemplatesSection">
+        <h2 class="section-sub-title">All Templates</h2>
+        <div class="all-templates-grid" id="allTemplatesGrid"></div>
+      </div>
+
+      <!-- No results -->
+      <div id="noResults" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">🔍</div>
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">No templates found</h3>
+        <p style="color:#6b7280;">Try a different search term or filter.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATE PREVIEW MODAL -->
+  <div class="preview-modal-overlay" id="previewModal">
+    <div class="preview-modal">
+      <div class="preview-modal-header">
+        <div>
+          <h3 id="previewModalName" class="preview-modal-title"></h3>
+          <p id="previewModalDesc" class="preview-modal-desc"></p>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <a id="previewModalUseBtn" href="builder.html" class="btn-primary">Use This Template</a>
+          <button class="modal-close" id="previewModalClose">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2l14 14M16 2L2 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="preview-modal-body">
+        <div class="preview-modal-preview" id="previewModalContent"></div>
+        <div class="preview-modal-sidebar">
+          <h4>Template Info</h4>
+          <div class="template-meta" id="previewModalMeta"></div>
+          <h4 style="margin-top:20px;">Color Themes</h4>
+          <div class="color-themes" id="previewModalColors"></div>
+          <a id="previewModalBtn" href="builder.html" class="btn-primary full-w" style="margin-top:20px;">
+            Use This Template Free →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner">
+    <div class="cta-blob cta-blob-1"></div>
+    <div class="cta-blob cta-blob-2"></div>
+    <div class="container">
+      <div class="cta-content">
+        <h2>Ready to Create Your Resume?</h2>
+        <p>Pick a template above and start building your professional resume in minutes.</p>
+        <a href="builder.html" class="btn-white btn-lg">
+          Start Building — It's Free!
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER (simplified) -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none; padding-top:40px;">
+        <p>© 2026 ResumeCV. All rights reserved. 100% Free — No Paywall.</p>
+        <div class="footer-bottom-links">
+          <a href="index.html">Home</a>
+          <a href="builder.html">Builder</a>
+          <a href="templates.html">Templates</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="/js/templates.js"></script>
+</body>
+</html>

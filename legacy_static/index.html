@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeCV | Best ATS-Friendly Online Resume Builder</title>
+  <meta name="description" content="Create a professional resume that results in interview callbacks with ResumeCV's AI Resume Builder. Free templates. Fill in your details & apply to jobs." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%232DC08D'/><path d='M6 7h7a3.5 3.5 0 0 1 0 7H6V7z' fill='white'/><path d='M6 14h5l3.5 5H9.5L6 14z' fill='white' opacity='0.7'/></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header" id="header">
+    <div class="header-inner container">
+      <a href="index.html" class="logo" aria-label="ResumeCV Home">
+        <svg width="140" height="28" viewBox="0 0 140 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="28" rx="8" fill="#2DC08D"/>
+          <path d="M8 8h8a4 4 0 0 1 0 8h-8V8z" fill="white"/>
+          <path d="M8 16h6l4 6H12L8 16z" fill="white" opacity="0.7"/>
+          <text x="36" y="20" font-family="Rubik, sans-serif" font-weight="700" font-size="18" fill="#1a1a2e">Resume<tspan fill="#2DC08D">CV</tspan></text>
+        </svg>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <div class="nav-item">
+          <button class="nav-link" aria-expanded="false" aria-controls="menu-resume">
+            Resume <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div id="menu-resume" class="dropdown" aria-hidden="true">
+            <div class="dropdown-col">
+              <p class="dropdown-label">Tools</p>
+              <ul class="dropdown-list">
+                <li><a href="builder.html" class="dropdown-link">
+                  <span class="dropdown-icon">🤖</span>
+                  <span><strong>AI Resume Builder</strong><small>Helps you land interviews</small></span>
+                </a></li>
+                <li><a href="templates.html" class="dropdown-link">
+                  <span class="dropdown-icon">📄</span>
+                  <span><strong>Resume Templates</strong><small>Free and premium templates</small></span>
+                </a></li>
+                <li><a href="builder.html" class="dropdown-link">
+                  <span class="dropdown-icon">✅</span>
+                  <span><strong>Resume Checker</strong><small>Is your resume good enough?</small></span>
+                </a></li>
+              </ul>
+            </div>
+            <div class="dropdown-col">
+              <p class="dropdown-label">Learning</p>
+              <ul class="dropdown-list plain">
+                <li><a href="#" class="dropdown-plain">How to write a resume</a></li>
+                <li><a href="#" class="dropdown-plain">Choosing a resume format</a></li>
+                <li><a href="#" class="dropdown-plain">Writing a resume summary</a></li>
+                <li><a href="#" class="dropdown-plain">Fit your experience on one page</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="nav-link" aria-expanded="false" aria-controls="menu-tools">
+            Tools <svg class="chevron" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div id="menu-tools" class="dropdown" aria-hidden="true">
+            <div class="dropdown-col">
+              <p class="dropdown-label">Job Search</p>
+              <ul class="dropdown-list">
+                <li><a href="#" class="dropdown-link">
+                  <span class="dropdown-icon">💬</span>
+                  <span><strong>Interview Help</strong><small>Practice with AI mock interviews</small></span>
+                </a></li>
+                <li><a href="#" class="dropdown-link">
+                  <span class="dropdown-icon">🎯</span>
+                  <span><strong>Job Tracker</strong><small>Organize your applications</small></span>
+                </a></li>
+                <li><a href="#" class="dropdown-link">
+                  <span class="dropdown-icon">💼</span>
+                  <span><strong>Cover Letter Builder</strong><small>Create a winning cover letter</small></span>
+                </a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <a href="templates.html" class="nav-link plain">Templates</a>
+        <a href="#" class="nav-link plain">Pricing</a>
+        <a href="#" class="nav-link plain">Blog</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="builder.html" class="btn-ghost">Log in</a>
+        <a href="builder.html" class="btn-primary">Build my resume</a>
+      </div>
+
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+      <nav>
+        <a href="builder.html">AI Resume Builder</a>
+        <a href="templates.html">Templates</a>
+        <a href="#">Pricing</a>
+        <a href="#">Blog</a>
+        <a href="builder.html" class="btn-primary full-w">Build my resume</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-blob blob-1"></div>
+      <div class="hero-blob blob-2"></div>
+      <div class="hero-blob blob-3"></div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Trusted by 3M+ job seekers worldwide
+        </div>
+        <h1 class="hero-title">
+          Build a Resume That<br />
+          <span class="gradient-text">Gets You Hired</span>
+        </h1>
+        <p class="hero-subtitle">
+          Create ATS-friendly resumes with AI assistance. Stand out from the competition with professionally designed templates that hiring managers love.
+        </p>
+        <div class="hero-actions">
+          <a href="builder.html" class="btn-primary btn-lg">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l1.5 4.5H16l-3.5 2.5 1.3 4.3L10 11l-3.8 2.3 1.3-4.3L4 6.5h4.5L10 2z" fill="currentColor"/></svg>
+            Build My Resume — Free
+          </a>
+          <a href="templates.html" class="btn-outline btn-lg">
+            Browse Templates
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <strong>3M+</strong>
+            <span>Resumes created</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <strong>4.8★</strong>
+            <span>Average rating</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <strong>85%</strong>
+            <span>Interview success rate</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-preview">
+        <div class="resume-preview-card card-1">
+          <div class="resume-mini" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+            <div class="rm-sidebar">
+              <div class="rm-avatar"></div>
+              <div class="rm-name-block">
+                <div class="rm-bar" style="width:70%; height:8px; background:#2DC08D; border-radius:4px; margin-bottom:4px;"></div>
+                <div class="rm-bar" style="width:50%; height:5px; background:rgba(255,255,255,0.4); border-radius:3px;"></div>
+              </div>
+              <div style="margin-top:12px;">
+                <div class="rm-label">CONTACT</div>
+                <div class="rm-bar" style="width:80%;"></div>
+                <div class="rm-bar" style="width:60%;"></div>
+                <div class="rm-bar" style="width:70%;"></div>
+              </div>
+              <div style="margin-top:10px;">
+                <div class="rm-label">SKILLS</div>
+                <div class="rm-skill"><div class="rm-skill-fill" style="width:85%"></div></div>
+                <div class="rm-skill"><div class="rm-skill-fill" style="width:70%"></div></div>
+                <div class="rm-skill"><div class="rm-skill-fill" style="width:90%"></div></div>
+              </div>
+            </div>
+            <div class="rm-main">
+              <div class="rm-section">
+                <div class="rm-section-title">EXPERIENCE</div>
+                <div class="rm-entry">
+                  <div class="rm-bar dark" style="width:80%; height:6px;"></div>
+                  <div class="rm-bar dark" style="width:50%; height:4px;"></div>
+                  <div class="rm-bar dark" style="width:90%; height:4px;"></div>
+                  <div class="rm-bar dark" style="width:70%; height:4px;"></div>
+                </div>
+                <div class="rm-entry">
+                  <div class="rm-bar dark" style="width:70%; height:6px;"></div>
+                  <div class="rm-bar dark" style="width:60%; height:4px;"></div>
+                  <div class="rm-bar dark" style="width:85%; height:4px;"></div>
+                </div>
+              </div>
+              <div class="rm-section">
+                <div class="rm-section-title">EDUCATION</div>
+                <div class="rm-entry">
+                  <div class="rm-bar dark" style="width:75%; height:6px;"></div>
+                  <div class="rm-bar dark" style="width:55%; height:4px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-badge badge-green">ATS Friendly</div>
+        </div>
+
+        <div class="resume-preview-card card-2">
+          <div class="resume-mini" style="background: #fff; border: 1px solid #e8e8e8;">
+            <div class="rm-header-clean">
+              <div class="rm-bar" style="width:60%; height:10px; background:#2DC08D; border-radius:4px; margin-bottom:6px;"></div>
+              <div class="rm-bar" style="width:40%; height:5px; background:#888; border-radius:3px;"></div>
+            </div>
+            <div style="padding: 8px; display:flex; gap:8px;">
+              <div style="flex:1">
+                <div class="rm-section-title" style="color:#2DC08D;">EXPERIENCE</div>
+                <div class="rm-entry">
+                  <div class="rm-bar" style="width:80%; height:5px; background:#333; border-radius:3px;"></div>
+                  <div class="rm-bar" style="width:55%; height:4px; background:#999; border-radius:3px;"></div>
+                  <div class="rm-bar" style="width:90%; height:4px; background:#ccc; border-radius:3px;"></div>
+                </div>
+              </div>
+              <div style="width:40%">
+                <div class="rm-section-title" style="color:#2DC08D;">SKILLS</div>
+                <div class="rm-bar" style="width:90%; height:4px; background:#ccc; border-radius:3px;"></div>
+                <div class="rm-bar" style="width:70%; height:4px; background:#ccc; border-radius:3px;"></div>
+                <div class="rm-bar" style="width:80%; height:4px; background:#ccc; border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card-badge badge-purple">Modern Design</div>
+        </div>
+
+        <div class="hero-floating-badge badge-hired">
+          <span>🎉</span> Hired at Google
+        </div>
+        <div class="hero-floating-badge badge-response">
+          <span>📧</span> 3x more responses
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPANY LOGOS -->
+  <section class="companies">
+    <div class="container">
+      <p class="companies-label">Our users got hired at</p>
+      <div class="companies-logos">
+        <div class="company-logo">
+          <svg width="80" height="24" viewBox="0 0 80 24"><text x="0" y="18" font-family="Arial" font-weight="700" font-size="18" fill="#4285F4">Go</text><text x="20" y="18" font-family="Arial" font-weight="700" font-size="18" fill="#EA4335">o</text><text x="32" y="18" font-family="Arial" font-weight="700" font-size="18" fill="#FBBC05">g</text><text x="44" y="18" font-family="Arial" font-weight="700" font-size="18" fill="#4285F4">l</text><text x="52" y="18" font-family="Arial" font-weight="700" font-size="18" fill="#34A853">e</text></svg>
+        </div>
+        <div class="company-logo"><span style="font-weight:700; font-size:20px; color:#0A66C2; font-family:'Arial'">in</span> <span style="font-weight:600; color:#0A66C2;">LinkedIn</span></div>
+        <div class="company-logo"><span style="font-weight:700; color:#FF9900; font-size:18px;">amazon</span></div>
+        <div class="company-logo"><span style="font-weight:700; color:#1DA462; font-size:18px;">Spotify</span></div>
+        <div class="company-logo"><span style="font-weight:700; color:#1877F2; font-size:18px;">Meta</span></div>
+        <div class="company-logo"><span style="font-weight:700; color:#CC2529; font-size:18px;">Netflix</span></div>
+        <div class="company-logo"><span style="font-weight:700; color:#00A4EF; font-size:18px;">Microsoft</span></div>
+        <div class="company-logo"><span style="font-weight:700; color:#000; font-size:18px;">Apple</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">Why Choose Us</div>
+        <h2>Everything You Need to <span class="gradient-text">Land Your Dream Job</span></h2>
+        <p>Our AI-powered platform gives you all the tools to create a standout resume that beats ATS systems and impresses hiring managers.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #2DC08D20, #2DC08D10);">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="3" y="3" width="22" height="22" rx="4" stroke="#2DC08D" stroke-width="2"/><path d="M8 10h12M8 14h8M8 18h10" stroke="#2DC08D" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3>ATS-Optimized Templates</h3>
+          <p>All templates are tested against major ATS systems to ensure your resume gets past automated filters and reaches human recruiters.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #7C3AED20, #7C3AED10);">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#7C3AED" stroke-width="2"/><path d="M10 14l3 3 6-6" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>AI Writing Assistant</h3>
+          <p>Get AI-powered suggestions for your bullet points, summary, and skills. Write compelling content that resonates with employers.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #F59E0B20, #F59E0B10);">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 3l2.5 7.5H24l-6 4.5 2.3 7L14 18l-6.3 4 2.3-7L4 10.5h7.5L14 3z" stroke="#F59E0B" stroke-width="2" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Real-Time Preview</h3>
+          <p>See exactly how your resume will look as you type. Edit and preview simultaneously with our split-screen builder.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #EC489920, #EC489910);">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="6" y="4" width="16" height="20" rx="2" stroke="#EC4899" stroke-width="2"/><path d="M10 9h8M10 13h6M10 17h7" stroke="#EC4899" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3>One-Click PDF Export</h3>
+          <p>Download your resume as a perfectly formatted PDF with a single click. Print-ready and pixel-perfect every time.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #0EA5E920, #0EA5E910);">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="10" r="5" stroke="#0EA5E9" stroke-width="2"/><path d="M4 24c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Multiple Templates</h3>
+          <p>Choose from 50+ professionally designed templates for every industry and career level — from entry-level to executive.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="background: linear-gradient(135deg, #10B98120, #10B98110);">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M7 14l4 4 10-10" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Resume Score Checker</h3>
+          <p>Get an instant score on your resume's effectiveness. Identify and fix weaknesses before sending to employers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">Simple Process</div>
+        <h2>Create Your Resume in <span class="gradient-text">3 Easy Steps</span></h2>
+        <p>Get a professional resume ready in minutes, not hours.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h3>Choose a Template</h3>
+            <p>Browse our collection of ATS-friendly, professionally designed templates. Pick one that matches your industry and style.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h3>Fill In Your Details</h3>
+            <p>Add your experience, education, skills and more. Our AI assistant helps you write powerful bullet points that stand out.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h3>Download & Apply</h3>
+            <p>Download your perfectly formatted resume as a PDF and start applying to jobs with confidence.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-center">
+        <a href="builder.html" class="btn-primary btn-lg">Start Building for Free</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATES SHOWCASE -->
+  <section class="templates-showcase" id="templates">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">Templates</div>
+        <h2>Professional Resume <span class="gradient-text">Templates</span></h2>
+        <p>Stand out with beautifully designed templates crafted by professional designers and tested by HR experts.</p>
+      </div>
+
+      <div class="templates-filter">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="modern">Modern</button>
+        <button class="filter-btn" data-filter="classic">Classic</button>
+        <button class="filter-btn" data-filter="creative">Creative</button>
+        <button class="filter-btn" data-filter="minimal">Minimal</button>
+      </div>
+
+      <div class="templates-grid" id="templatesGrid">
+        <!-- Templates rendered by JS -->
+      </div>
+
+      <div class="cta-center" style="margin-top:40px;">
+        <a href="templates.html" class="btn-outline btn-lg">View All Templates →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-section">
+    <div class="stats-inner">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" data-count="3000000">0</div>
+            <div class="stat-label">Resumes Created</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" data-count="50">0</div>
+            <div class="stat-label">Resume Templates</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" data-count="148">0</div>
+            <div class="stat-label">Countries Served</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" data-prefix="4." data-count="8" data-suffix="★">0</div>
+            <div class="stat-label">Average User Rating</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">Success Stories</div>
+        <h2>Real People, <span class="gradient-text">Real Results</span></h2>
+        <p>Join millions of people who've landed their dream jobs using our platform.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"I created my resume in under 30 minutes and got called for 3 interviews that same week. The ATS optimization is incredible!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #2DC08D, #0EA5E9);">S</div>
+            <div>
+              <strong>Sarah Mitchell</strong>
+              <small>Software Engineer at Google</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card featured">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"After months of applying with no callbacks, I rebuilt my resume here and got 5 interview invitations within two weeks. Game changer!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #7C3AED, #EC4899);">J</div>
+            <div>
+              <strong>James Rodriguez</strong>
+              <small>Product Manager at Meta</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"The AI suggestions helped me articulate my experience in a way I never could have done alone. Worth every second spent using it!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #F59E0B, #EF4444);">A</div>
+            <div>
+              <strong>Aisha Thompson</strong>
+              <small>Data Analyst at Amazon</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"The templates are stunning and the real-time preview is amazing. I could see exactly how my resume looked as I was building it."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #0EA5E9, #2DC08D);">M</div>
+            <div>
+              <strong>Marcus Chen</strong>
+              <small>UX Designer at Netflix</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"I was skeptical at first, but the resume score feature really helped me understand what was missing. Got hired within 3 weeks!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #EC4899, #7C3AED);">L</div>
+            <div>
+              <strong>Lisa Park</strong>
+              <small>Marketing Manager at Spotify</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"Clean, professional, and easy to use. The templates are modern and the export quality is perfect. Highly recommend!"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: linear-gradient(135deg, #10B981, #0EA5E9);">D</div>
+            <div>
+              <strong>David Kumar</strong>
+              <small>Financial Analyst at Microsoft</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">FAQ</div>
+        <h2>Frequently Asked <span class="gradient-text">Questions</span></h2>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Is this resume builder really free?
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes! Our resume builder is completely free to use. You can create, edit, and download your resume without any paywall or premium subscription required.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Are the templates ATS-friendly?
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Absolutely! All our templates are designed and tested to pass Applicant Tracking Systems (ATS). They use clean formatting, standard fonts, and proper section headings that ATS parsers can read.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Can I download my resume as PDF?
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes! You can download your resume as a high-quality PDF with one click. The PDF is perfectly formatted and print-ready.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            How does the AI writing assistant work?
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Our AI assistant analyzes your input and generates professional bullet points, summaries, and skill suggestions. Simply describe what you did and let AI help you phrase it in a compelling way.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Can I create multiple resumes?
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes! You can create multiple versions of your resume tailored to different jobs or industries. All your resumes are saved locally in your browser.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Is my data private and secure?
+            <svg class="faq-icon" width="20" height="20" viewBox="0 0 20 20"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Your resume data is stored locally in your browser using localStorage. We don't store any personal information on our servers unless you choose to create an account.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner">
+    <div class="cta-blob cta-blob-1"></div>
+    <div class="cta-blob cta-blob-2"></div>
+    <div class="container">
+      <div class="cta-content">
+        <h2>Ready to Land Your Dream Job?</h2>
+        <p>Join 3 million+ professionals who've used our platform to create winning resumes.</p>
+        <a href="builder.html" class="btn-white btn-lg">
+          Build My Resume — It's Free!
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
+              <rect width="24" height="24" rx="6" fill="#2DC08D"/>
+              <path d="M6 7h7a3.5 3.5 0 0 1 0 7H6V7z" fill="white"/>
+              <path d="M6 14h5l3.5 5H9.5L6 14z" fill="white" opacity="0.7"/>
+              <text x="30" y="17" font-family="Rubik, sans-serif" font-weight="700" font-size="16" fill="#1a1a2e">Resume<tspan fill="#2DC08D">CV</tspan></text>
+            </svg>
+          </a>
+          <p>Create professional, ATS-friendly resumes that help you land your dream job. 100% free, no paywall.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Twitter">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="#" aria-label="LinkedIn">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.779 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z"/></svg>
+            </a>
+            <a href="#" aria-label="Facebook">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18 10.048C18 5.582 14.418 2 9.952 2 5.486 2 1.904 5.582 1.904 10.048c0 4.024 2.948 7.36 6.808 7.952v-5.624H6.762v-2.328h1.95V8.424c0-1.926 1.146-2.99 2.902-2.99.84 0 1.72.15 1.72.15v1.89h-.97c-.954 0-1.252.592-1.252 1.2v1.44h2.13l-.34 2.328h-1.79V18c3.86-.592 6.808-3.928 6.808-7.952z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Resume</h4>
+          <ul>
+            <li><a href="builder.html">Resume Builder</a></li>
+            <li><a href="templates.html">Resume Templates</a></li>
+            <li><a href="builder.html">Resume Checker</a></li>
+            <li><a href="#">Resume Examples</a></li>
+            <li><a href="#">Cover Letter Builder</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">How to Write a Resume</a></li>
+            <li><a href="#">Resume Tips</a></li>
+            <li><a href="#">Interview Tips</a></li>
+            <li><a href="#">Career Advice</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 ResumeCV. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

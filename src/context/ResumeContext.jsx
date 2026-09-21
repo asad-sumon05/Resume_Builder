@@ -1,0 +1,1221 @@
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+
+const ResumeContext = createContext(null);
+
+const DEFAULT_RESUME_DATA = {
+  personal: {
+    firstName: 'Alex',
+    lastName: 'Johnson',
+    jobTitle: 'Senior Software Engineer',
+    email: 'alex.johnson@email.com',
+    phone: '+1 (555) 234-5678',
+    location: 'San Francisco, CA',
+    website: 'linkedin.com/in/alexjohnson',
+    summary: 'Results-driven software engineer with 6+ years of experience architecting distributed cloud systems, modern React frontends, and high-throughput APIs. Passionate about developer velocity and system resilience.',
+    photo: null
+  },
+  experience: [
+    {
+      id: 'exp-1',
+      title: 'Senior Software Engineer',
+      company: 'TechCorp Inc.',
+      location: 'San Francisco, CA',
+      startDate: 'Jan 2021',
+      endDate: 'Present',
+      current: true,
+      bullets: [
+        'Architected distributed microservices handling 45M+ daily requests with 99.99% uptime',
+        'Reduced AWS infrastructure costs by $180K/year through serverless auto-scaling and spot instances',
+        'Mentored 6 junior engineers and spearheaded cross-functional adoption of TypeScript & GraphQL'
+      ]
+    },
+    {
+      id: 'exp-2',
+      title: 'Full Stack Engineer',
+      company: 'StartupXYZ',
+      location: 'New York, NY',
+      startDate: 'Mar 2018',
+      endDate: 'Dec 2020',
+      current: false,
+      bullets: [
+        'Built responsive design system and core dashboard features in React and Node.js',
+        'Implemented real-time collaboration engine using WebSockets and Redis pub/sub',
+        'Cut test pipeline runtimes by 55% via parallelized GitHub Actions'
+      ]
+    }
+  ],
+  education: [
+    {
+      id: 'edu-1',
+      degree: 'B.S. in Computer Science',
+      institution: 'University of California, Berkeley',
+      city: 'Berkeley',
+      location: 'Berkeley',
+      year: '2014 – 2018',
+      gradeType: 'CGPA',
+      gpa: '3.85',
+      honors: 'Magna Cum Laude'
+    }
+  ],
+  skills: [
+    { id: 'sk-1', name: 'JavaScript & TypeScript', level: 95 },
+    { id: 'sk-2', name: 'React & Next.js', level: 92 },
+    { id: 'sk-3', name: 'Node.js & Express', level: 88 },
+    { id: 'sk-4', name: 'Python & FastAPI', level: 80 },
+    { id: 'sk-5', name: 'PostgreSQL & Redis', level: 85 },
+    { id: 'sk-6', name: 'AWS & Docker', level: 82 }
+  ],
+  languages: [
+    { id: 'lang-1', name: 'English', level: 'Native' },
+    { id: 'lang-2', name: 'Spanish', level: 'Intermediate' }
+  ],
+  certifications: [
+    { id: 'cert-1', name: 'AWS Certified Solutions Architect', issuer: 'Amazon Web Services', date: '2023' }
+  ],
+  projects: [
+    {
+      id: 'proj-1',
+      name: 'Distributed Task Queue',
+      url: 'github.com/alexj/fast-queue',
+      description: 'High-throughput async job runner with Redis backend and automatic retry backoffs. 1.2K+ GitHub stars.',
+      technologies: 'Go, Redis, Docker'
+    }
+  ],
+  awards: [
+    { id: 'aw-1', title: 'Top Engineering Innovator', issuer: 'TechCorp Annual Awards', date: '2022', description: 'Awarded for reducing system latency by 40%.' }
+  ],
+  volunteer: [
+    { id: 'vol-1', role: 'Volunteer Code Mentor', organization: 'Black Girls CODE', startDate: '2021', endDate: 'Present', bullets: ['Mentored high school students in web development.'] }
+  ],
+  publications: [],
+  hobbies: [
+    { id: 'hob-1', name: 'Marathon Running', description: 'Boston Marathon 2023 Finisher' },
+    { id: 'hob-2', name: 'Open Source', description: 'Contributor to React ecosystem' }
+  ],
+  references: [],
+  customSections: {},
+  activeSections: ['personal', 'summary', 'experience', 'education', 'skills', 'languages', 'certifications', 'projects', 'awards', 'volunteer', 'hobbies']
+};
+
+export const ACCENT_COLORS = [
+  { color: '#2DC08D', name: 'Emerald' },
+  { color: '#0EA5E9', name: 'Sky Blue' },
+  { color: '#7C3AED', name: 'Violet' },
+  { color: '#F59E0B', name: 'Amber' },
+  { color: '#EF4444', name: 'Crimson' },
+  { color: '#EC4899', name: 'Pink' },
+  { color: '#10B981', name: 'Mint' },
+  { color: '#1E3A5F', name: 'Navy' },
+  { color: '#374151', name: 'Slate' },
+  { color: '#8B5E3C', name: 'Bronze' }
+];
+
+export const TEMPLATES = [
+  { id: 'modern', name: 'Modern Pro', desc: 'Dark sidebar with vibrant accent', preview: 'dark-sidebar' },
+  { id: 'clean', name: 'Professional', desc: 'Classic two-column layout', preview: 'clean' },
+  { id: 'minimal', name: 'Minimal', desc: 'Clean and elegant single column', preview: 'minimal' },
+  { id: 'executive', name: 'Executive', desc: 'Bold header for senior roles', preview: 'executive' },
+  { id: 'tech', name: 'Tech Dark', desc: 'Code-inspired dark theme', preview: 'tech' },
+  { id: 'elegant', name: 'Elegant', desc: 'Centered layout with fine typography', preview: 'elegant' },
+  { id: 'timeline', name: 'Timeline', desc: 'Visual career journey with milestone markers', preview: 'timeline' },
+  { id: 'compact', name: 'Compact ATS', desc: 'High density single page format', preview: 'minimal' },
+  { id: 'startup', name: 'Startup Bold', desc: 'Metrics badges and modern cards', preview: 'dark-sidebar' },
+  { id: 'academic', name: 'Academic CV', desc: 'Formal CV with honors & research', preview: 'clean' },
+  { id: 'darkpro', name: 'Dark Pro', desc: 'Deep dark background with neon accents', preview: 'tech' },
+  { id: 'nordic', name: 'Nordic Clean', desc: 'Subtle grey rules and generous space', preview: 'minimal' },
+  { id: 'infographic', name: 'Infographic', desc: 'Visual skills, badges and metrics', preview: 'clean' },
+  { id: 'corporate', name: 'Corporate', desc: 'Structured blue headers and dividers', preview: 'clean' },
+  { id: 'twopage', name: 'Two-Page Classic', desc: 'Extended layout for senior experts', preview: 'clean' },
+  { id: 'bold', name: 'Bold Impact', desc: 'Strong high-contrast typographic layout', preview: 'dark-sidebar' },
+  { id: 'fresh', name: 'Fresh Entry', desc: 'Vibrant and modern for starters', preview: 'dark-sidebar' },
+  { id: 'impact', name: 'Impact Executive', desc: 'Prominent header banner', preview: 'executive' },
+  { id: 'pastel', name: 'Pastel Creative', desc: 'Soft tones for creative disciplines', preview: 'elegant' }
+];
+
+export const SECTIONS_CONFIG = [
+  { id: 'personal', label: 'Personal Info', icon: '👤', required: true },
+  { id: 'summary', label: 'Summary', icon: '📝', required: false },
+  { id: 'experience', label: 'Work Experience', icon: '💼', required: false },
+  { id: 'education', label: 'Education', icon: '🎓', required: false },
+  { id: 'skills', label: 'Skills', icon: '⚡', required: false },
+  { id: 'languages', label: 'Languages', icon: '🌐', required: false },
+  { id: 'certifications', label: 'Certifications', icon: '🏆', required: false },
+  { id: 'projects', label: 'Projects', icon: '🚀', required: false },
+  { id: 'awards', label: 'Awards & Honors', icon: '⭐', required: false },
+  { id: 'volunteer', label: 'Volunteering', icon: '❤️', required: false },
+  { id: 'publications', label: 'Publications', icon: '📚', required: false },
+  { id: 'hobbies', label: 'Hobbies & Passions', icon: '🎯', required: false },
+  { id: 'references', label: 'References', icon: '👥', required: false }
+];
+
+export function ResumeProvider({ children }) {
+  const [data, setData] = useState(() => {
+    try {
+      const saved = localStorage.getItem('resumecv_data_v2');
+      return saved ? JSON.parse(saved) : DEFAULT_RESUME_DATA;
+    } catch (e) {
+      return DEFAULT_RESUME_DATA;
+    }
+  });
+
+  const [template, setTemplate] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryTmpl = urlParams.get('template');
+      if (queryTmpl) return queryTmpl;
+      return localStorage.getItem('resumecv_template') || 'modern';
+    } catch (e) {
+      return 'modern';
+    }
+  });
+
+  const [accentColor, setAccentColor] = useState(() => {
+    try {
+      return localStorage.getItem('resumecv_color') || '#2DC08D';
+    } catch (e) {
+      return '#2DC08D';
+    }
+  });
+
+  const [fontFamily, setFontFamily] = useState('Inter');
+  const [fontSize, setFontSize] = useState('medium');
+  const [lineSpacing, setLineSpacing] = useState('normal');
+  const [zoom, setZoom] = useState(0.85);
+  const [activeTab, setActiveTab] = useState('builder'); // 'landing', 'templates', 'builder'
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // History stack for Undo / Redo
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const isUndoRedoAction = useRef(false);
+
+  // Show toast notification
+  const showToast = useCallback((msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  }, []);
+
+  // Save state snapshots to history
+  const recordHistory = useCallback((newData) => {
+    if (isUndoRedoAction.current) {
+      isUndoRedoAction.current = false;
+      return;
+    }
+    setHistory(prev => {
+      const sliced = prev.slice(0, historyIndex + 1);
+      return [...sliced, JSON.stringify(newData)].slice(-30); // keep up to 30 snapshots
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, 29));
+  }, [historyIndex]);
+
+  // Sync to local storage
+  useEffect(() => {
+    try {
+      localStorage.setItem('resumecv_data_v2', JSON.stringify(data));
+      localStorage.setItem('resumecv_template', template);
+      localStorage.setItem('resumecv_color', accentColor);
+    } catch (e) {}
+  }, [data, template, accentColor]);
+
+  // Undo / Redo handlers
+  const undo = () => {
+    if (historyIndex > 0) {
+      isUndoRedoAction.current = true;
+      const targetState = JSON.parse(history[historyIndex - 1]);
+      setData(targetState);
+      setHistoryIndex(prev => prev - 1);
+      showToast('Undo');
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      isUndoRedoAction.current = true;
+      const targetState = JSON.parse(history[historyIndex + 1]);
+      setData(targetState);
+      setHistoryIndex(prev => prev + 1);
+      showToast('Redo');
+    }
+  };
+
+  // Keyboard shortcut listener for Cmd+Z / Cmd+Y
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.metaKey || e.ctrlKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [history, historyIndex]);
+
+  // Direct State Updaters
+  const updateData = (updater) => {
+    setData(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      recordHistory(next);
+      return next;
+    });
+  };
+
+  const updatePersonal = (field, value) => {
+    updateData(prev => ({
+      ...prev,
+      personal: { ...prev.personal, [field]: value }
+    }));
+  };
+
+  // Experience handlers
+  const updateExperience = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      experience: prev.experience.map(exp => exp.id === id ? { ...exp, [field]: value } : exp)
+    }));
+  };
+
+  const addExperience = () => {
+    const newItem = {
+      id: 'exp-' + Date.now(),
+      title: 'Job Position',
+      company: 'Company Name',
+      location: 'City, State',
+      startDate: '2022',
+      endDate: 'Present',
+      current: true,
+      bullets: ['Describe your key impact, metrics, and achievements...']
+    };
+    updateData(prev => ({ ...prev, experience: [newItem, ...prev.experience] }));
+    showToast('New position added! Click to edit.');
+  };
+
+  const removeExperience = (id) => {
+    updateData(prev => ({ ...prev, experience: prev.experience.filter(e => e.id !== id) }));
+  };
+
+  const addBullet = (expId, index = -1, initialText = 'Accomplished [X] as measured by [Y] by doing [Z]') => {
+    updateData(prev => ({
+      ...prev,
+      experience: prev.experience.map(exp => {
+        if (exp.id !== expId) return exp;
+        const newBullets = [...exp.bullets];
+        if (index >= 0) newBullets.splice(index + 1, 0, initialText);
+        else newBullets.push(initialText);
+        return { ...exp, bullets: newBullets };
+      })
+    }));
+  };
+
+  const updateBullet = (expId, bulletIndex, text) => {
+    updateData(prev => ({
+      ...prev,
+      experience: prev.experience.map(exp => {
+        if (exp.id !== expId) return exp;
+        const newBullets = [...exp.bullets];
+        newBullets[bulletIndex] = text;
+        return { ...exp, bullets: newBullets };
+      })
+    }));
+  };
+
+  const removeBullet = (expId, bulletIndex) => {
+    updateData(prev => ({
+      ...prev,
+      experience: prev.experience.map(exp => {
+        if (exp.id !== expId) return exp;
+        const newBullets = exp.bullets.filter((_, i) => i !== bulletIndex);
+        return { ...exp, bullets: newBullets.length ? newBullets : [''] };
+      })
+    }));
+  };
+
+  // Education handlers
+  const updateEducation = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      education: prev.education.map(edu => edu.id === id ? { ...edu, [field]: value } : edu)
+    }));
+  };
+
+  const addEducation = () => {
+    const newItem = {
+      id: 'edu-' + Date.now(),
+      degree: 'Degree or Diploma',
+      institution: 'University / Institution',
+      city: 'City',
+      location: 'City',
+      year: '2020 – 2024',
+      gradeType: 'CGPA',
+      gpa: '',
+      honors: ''
+    };
+    updateData(prev => ({ ...prev, education: [...prev.education, newItem] }));
+    showToast('Education item added!');
+  };
+
+  const removeEducation = (id) => {
+    updateData(prev => ({ ...prev, education: prev.education.filter(e => e.id !== id) }));
+  };
+
+  // Skills handlers
+  const updateSkill = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      skills: prev.skills.map(sk => sk.id === id ? { ...sk, [field]: value } : sk)
+    }));
+  };
+
+  const addSkill = (name = 'New Skill', level = 85) => {
+    const newItem = { id: 'sk-' + Date.now(), name, level };
+    updateData(prev => ({ ...prev, skills: [...prev.skills, newItem] }));
+  };
+
+  const removeSkill = (id) => {
+    updateData(prev => ({ ...prev, skills: prev.skills.filter(s => s.id !== id) }));
+  };
+
+  // Languages handlers
+  const updateLanguage = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      languages: prev.languages.map(l => l.id === id ? { ...l, [field]: value } : l)
+    }));
+  };
+
+  const addLanguage = (name = 'Language', level = 'Fluent') => {
+    const newItem = { id: 'lang-' + Date.now(), name, level };
+    updateData(prev => ({ ...prev, languages: [...prev.languages, newItem] }));
+  };
+
+  const removeLanguage = (id) => {
+    updateData(prev => ({ ...prev, languages: prev.languages.filter(l => l.id !== id) }));
+  };
+
+  // Certifications handlers
+  const updateCertification = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      certifications: prev.certifications.map(c => c.id === id ? { ...c, [field]: value } : c)
+    }));
+  };
+
+  const addCertification = () => {
+    const newItem = { id: 'cert-' + Date.now(), name: 'Certification Name', issuer: 'Issuer Authority', date: '2023' };
+    updateData(prev => ({ ...prev, certifications: [...prev.certifications, newItem] }));
+  };
+
+  const removeCertification = (id) => {
+    updateData(prev => ({ ...prev, certifications: prev.certifications.filter(c => c.id !== id) }));
+  };
+
+  // Projects handlers
+  const updateProject = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      projects: prev.projects.map(p => p.id === id ? { ...p, [field]: value } : p)
+    }));
+  };
+
+  const addProject = () => {
+    const newItem = { id: 'proj-' + Date.now(), name: 'Project Name', url: 'github.com/username/project', description: 'Brief overview of project goals, architecture, and impact.', technologies: 'React, Node.js' };
+    updateData(prev => ({ ...prev, projects: [...prev.projects, newItem] }));
+  };
+
+  const removeProject = (id) => {
+    updateData(prev => ({ ...prev, projects: prev.projects.filter(p => p.id !== id) }));
+  };
+
+  // Awards handlers
+  const updateAward = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      awards: (prev.awards || []).map(a => a.id === id ? { ...a, [field]: value } : a)
+    }));
+  };
+
+  const addAward = () => {
+    const newItem = { id: 'aw-' + Date.now(), title: 'Award Title', issuer: 'Organization', date: '2023', description: 'Recognition for outstanding contributions.' };
+    updateData(prev => ({ ...prev, awards: [...(prev.awards || []), newItem] }));
+  };
+
+  const removeAward = (id) => {
+    updateData(prev => ({ ...prev, awards: (prev.awards || []).filter(a => a.id !== id) }));
+  };
+
+  // Volunteer handlers
+  const updateVolunteer = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      volunteer: (prev.volunteer || []).map(v => v.id === id ? { ...v, [field]: value } : v)
+    }));
+  };
+
+  const addVolunteer = () => {
+    const newItem = { id: 'vol-' + Date.now(), role: 'Volunteer Role', organization: 'Nonprofit Name', startDate: '2022', endDate: 'Present', bullets: ['Supported community initiatives.'] };
+    updateData(prev => ({ ...prev, volunteer: [...(prev.volunteer || []), newItem] }));
+  };
+
+  const removeVolunteer = (id) => {
+    updateData(prev => ({ ...prev, volunteer: (prev.volunteer || []).filter(v => v.id !== id) }));
+  };
+
+  // Hobbies handlers
+  const updateHobby = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      hobbies: (prev.hobbies || []).map(h => h.id === id ? { ...h, [field]: value } : h)
+    }));
+  };
+
+  const addHobby = () => {
+    const newItem = { id: 'hob-' + Date.now(), name: 'New Passion', description: 'Short detail' };
+    updateData(prev => ({ ...prev, hobbies: [...(prev.hobbies || []), newItem] }));
+  };
+
+  const removeHobby = (id) => {
+    updateData(prev => ({ ...prev, hobbies: (prev.hobbies || []).filter(h => h.id !== id) }));
+  };
+
+  // Section visibility toggle
+  const toggleSection = (sectionId) => {
+    updateData(prev => {
+      const active = prev.activeSections || [];
+      const isPresent = active.includes(sectionId);
+      return {
+        ...prev,
+        activeSections: isPresent ? active.filter(s => s !== sectionId) : [...active, sectionId]
+      };
+    });
+  };
+
+  // Move Section Up/Down
+  const moveSection = (sectionId, direction) => {
+    updateData(prev => {
+      const active = [...(prev.activeSections || [])];
+      const index = active.indexOf(sectionId);
+      if (index === -1) return prev;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= active.length) return prev;
+
+      const temp = active[index];
+      active[index] = active[targetIndex];
+      active[targetIndex] = temp;
+
+      return { ...prev, activeSections: active };
+    });
+  };
+
+  const moveSectionToPosition = (sectionId, targetIndex) => {
+    updateData(prev => {
+      const active = [...(prev.activeSections || [])];
+      const currentIndex = active.indexOf(sectionId);
+      if (currentIndex === -1) return prev;
+      const [removed] = active.splice(currentIndex, 1);
+      const boundedIndex = Math.max(0, Math.min(targetIndex, active.length));
+      active.splice(boundedIndex, 0, removed);
+      return { ...prev, activeSections: active };
+    });
+  };
+
+  // Add Custom Section
+  const addCustomSection = (title, styleType = 'bullet') => {
+    const id = 'custom_' + Date.now();
+    let initialItems = [];
+
+    if (styleType === 'bullet') {
+      initialItems = [
+        {
+          id: 'item-1',
+          title: 'Key Project / Role',
+          organization: 'Organization / Client',
+          date: '2023 – Present',
+          location: 'Remote',
+          bullets: [
+            'Spearheaded initiative delivering high business impact and measurable outcomes',
+            'Coordinated cross-functional objectives resulting in 30% process efficiency'
+          ]
+        }
+      ];
+    } else if (styleType === 'tags') {
+      initialItems = [
+        {
+          id: 'item-1',
+          category: 'Core Competencies',
+          tags: ['Analytical Thinking', 'Problem Solving', 'Leadership']
+        }
+      ];
+    } else if (styleType === 'text') {
+      initialItems = [
+        {
+          id: 'item-1',
+          text: 'Add your custom narrative, statement, publications list, or philosophy here.'
+        }
+      ];
+    } else {
+      initialItems = [
+        {
+          id: 'item-1',
+          title: 'Title / Milestone',
+          issuer: 'Awarding Body / Details',
+          date: '2023',
+          description: 'Recognized for significant achievement and excellence.'
+        }
+      ];
+    }
+
+    updateData(prev => ({
+      ...prev,
+      customSections: {
+        ...(prev.customSections || {}),
+        [id]: {
+          id,
+          title: title || 'Custom Section',
+          styleType,
+          items: initialItems
+        }
+      },
+      activeSections: [...(prev.activeSections || []), id]
+    }));
+
+    showToast(`Added "${title || 'Custom Section'}"! ✨`);
+    return id;
+  };
+
+  // Delete Custom Section
+  const deleteCustomSection = (id) => {
+    updateData(prev => {
+      const updatedCustom = { ...(prev.customSections || {}) };
+      delete updatedCustom[id];
+      return {
+        ...prev,
+        customSections: updatedCustom,
+        activeSections: (prev.activeSections || []).filter(s => s !== id)
+      };
+    });
+    showToast('Custom section removed');
+  };
+
+  // Update Custom Section Title
+  const updateCustomSectionTitle = (id, newTitle) => {
+    updateData(prev => {
+      if (!prev.customSections || !prev.customSections[id]) return prev;
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [id]: {
+            ...prev.customSections[id],
+            title: newTitle
+          }
+        }
+      };
+    });
+  };
+
+  // Add Item to Custom Section
+  const addCustomSectionItem = (sectionId) => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      let newItem;
+      if (sec.styleType === 'bullet') {
+        newItem = {
+          id: 'item-' + Date.now(),
+          title: 'New Position / Project',
+          organization: 'Company / Organization',
+          date: '2024',
+          location: '',
+          bullets: ['Add achievement bullet point']
+        };
+      } else if (sec.styleType === 'tags') {
+        newItem = {
+          id: 'item-' + Date.now(),
+          category: 'New Category',
+          tags: ['New Skill']
+        };
+      } else if (sec.styleType === 'text') {
+        newItem = {
+          id: 'item-' + Date.now(),
+          text: 'New paragraph block...'
+        };
+      } else {
+        newItem = {
+          id: 'item-' + Date.now(),
+          title: 'New Milestone / Honor',
+          issuer: 'Issuer / Organization',
+          date: '2024',
+          description: 'Details'
+        };
+      }
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items: [...(sec.items || []), newItem]
+          }
+        }
+      };
+    });
+  };
+
+  // Update Custom Section Item Field
+  const updateCustomSectionItem = (sectionId, itemIdx, field, value) => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = [...(sec.items || [])];
+      if (!items[itemIdx]) return prev;
+      items[itemIdx] = { ...items[itemIdx], [field]: value };
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  // Remove Item from Custom Section
+  const removeCustomSectionItem = (sectionId, itemIdx) => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = (sec.items || []).filter((_, idx) => idx !== itemIdx);
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  // Custom Section Bullet Management
+  const addCustomSectionBullet = (sectionId, itemIdx, text = 'Spearheaded key milestone with measurable business results') => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = [...(sec.items || [])];
+      if (!items[itemIdx]) return prev;
+      const bullets = [...(items[itemIdx].bullets || []), text];
+      items[itemIdx] = { ...items[itemIdx], bullets };
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  const updateCustomSectionBullet = (sectionId, itemIdx, bIdx, text) => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = [...(sec.items || [])];
+      if (!items[itemIdx]) return prev;
+      const bullets = [...(items[itemIdx].bullets || [])];
+      bullets[bIdx] = text;
+      items[itemIdx] = { ...items[itemIdx], bullets };
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  const removeCustomSectionBullet = (sectionId, itemIdx, bIdx) => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = [...(sec.items || [])];
+      if (!items[itemIdx]) return prev;
+      const bullets = (items[itemIdx].bullets || []).filter((_, idx) => idx !== bIdx);
+      items[itemIdx] = { ...items[itemIdx], bullets };
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  // Custom Section Tags Management
+  const addCustomSectionTag = (sectionId, itemIdx, tag) => {
+    if (!tag || !tag.trim()) return;
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = [...(sec.items || [])];
+      if (!items[itemIdx]) return prev;
+      const tags = [...(items[itemIdx].tags || []), tag.trim()];
+      items[itemIdx] = { ...items[itemIdx], tags };
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  const removeCustomSectionTag = (sectionId, itemIdx, tagIdx) => {
+    updateData(prev => {
+      const sec = prev.customSections?.[sectionId];
+      if (!sec) return prev;
+      const items = [...(sec.items || [])];
+      if (!items[itemIdx]) return prev;
+      const tags = (items[itemIdx].tags || []).filter((_, idx) => idx !== tagIdx);
+      items[itemIdx] = { ...items[itemIdx], tags };
+
+      return {
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [sectionId]: {
+            ...sec,
+            items
+          }
+        }
+      };
+    });
+  };
+
+  // Real-time ATS Strength Score calculation
+  const calculateScore = () => {
+    let score = 0;
+    const p = data.personal;
+    if (p.firstName && p.lastName) score += 10;
+    if (p.email) score += 10;
+    if (p.phone) score += 5;
+    if (p.location) score += 5;
+    if (p.jobTitle) score += 10;
+    if (p.summary && p.summary.length > 50) score += 15;
+    if (data.experience.length >= 1) score += 15;
+    if (data.experience.length >= 2) score += 5;
+    if (data.experience.some(e => e.bullets && e.bullets.length >= 2)) score += 10;
+    if (data.education.length >= 1) score += 5;
+    if (data.skills.length >= 4) score += 10;
+    return Math.min(100, score);
+  };
+
+  // Sample Presets Loader
+  const loadPreset = (presetKey) => {
+    if (presetKey === 'software') {
+      setData(DEFAULT_RESUME_DATA);
+      setAccentColor('#2DC08D');
+      setTemplate('modern');
+      showToast('Loaded Software Engineer resume! ✨');
+    } else if (presetKey === 'designer') {
+      setData({
+        ...DEFAULT_RESUME_DATA,
+        personal: {
+          firstName: 'Maya',
+          lastName: 'Lin',
+          jobTitle: 'Lead Product & UX Designer',
+          email: 'maya.lin.design@email.com',
+          phone: '+1 (555) 789-0123',
+          location: 'New York, NY',
+          website: 'mayalin.design',
+          summary: 'Strategic Product Designer with 7+ years delivering user-centered digital products across fintech and enterprise SaaS. Expert in design systems, interaction architecture, and conversion optimization.',
+          photo: null
+        },
+        experience: [
+          {
+            id: 'exp-d1',
+            title: 'Staff Product Designer',
+            company: 'FinFlow Global',
+            location: 'New York, NY',
+            startDate: 'Feb 2021',
+            endDate: 'Present',
+            current: true,
+            bullets: [
+              'Led end-to-end redesign of mobile onboarding, elevating user completion rates by 38%',
+              'Established company-wide design system "FlowUI" serving 80+ engineers across 4 product squads',
+              'Conducted 50+ qualitative user research sessions and usability studies across US and EU markets'
+            ]
+          },
+          {
+            id: 'exp-d2',
+            title: 'Senior UX Designer',
+            company: 'Aura Studio',
+            location: 'Brooklyn, NY',
+            startDate: 'Jul 2017',
+            endDate: 'Jan 2021',
+            current: false,
+            bullets: [
+              'Delivered high-conversion responsive web designs for Fortune 500 media and retail partners',
+              'Built comprehensive interactive Figma prototypes facilitating executive consensus'
+            ]
+          }
+        ],
+        skills: [
+          { id: 'sk-d1', name: 'Figma & Design Systems', level: 98 },
+          { id: 'sk-d2', name: 'User Research & Testing', level: 92 },
+          { id: 'sk-d3', name: 'Interactive Prototyping', level: 88 },
+          { id: 'sk-d4', name: 'Information Architecture', level: 90 },
+          { id: 'sk-d5', name: 'HTML5 & CSS3 Design Tokens', level: 78 }
+        ]
+      });
+      setAccentColor('#7C3AED');
+      setTemplate('timeline');
+      showToast('Loaded Product Designer resume! 🎨');
+    } else if (presetKey === 'marketing') {
+      setData({
+        ...DEFAULT_RESUME_DATA,
+        personal: {
+          firstName: 'Jordan',
+          lastName: 'Taylor',
+          jobTitle: 'Growth Marketing Director',
+          email: 'jordan.taylor@growth.io',
+          phone: '+1 (555) 456-7890',
+          location: 'Austin, TX',
+          website: 'jordangrowth.com',
+          summary: 'Metrics-obsessed growth marketing leader with 8+ years scaling B2B SaaS ARR from $2M to $25M. Deep mastery of performance marketing, organic search engine strategy, and customer lifecycle retention.',
+          photo: null
+        },
+        experience: [
+          {
+            id: 'exp-m1',
+            title: 'Director of Growth Marketing',
+            company: 'ScaleStack SaaS',
+            location: 'Austin, TX',
+            startDate: 'Mar 2021',
+            endDate: 'Present',
+            current: true,
+            bullets: [
+              'Scaled qualified pipeline generation by 140% YoY while decreasing CAC by 28%',
+              'Directed $3.5M annual paid acquisition budget across Google Ads, LinkedIn, and Meta',
+              'Architected automated nurture sequences generating $4.2M in assisted closed-won revenue'
+            ]
+          }
+        ],
+        skills: [
+          { id: 'sk-m1', name: 'SEO & SEM Acquisition', level: 95 },
+          { id: 'sk-m2', name: 'Google Ads & LinkedIn Ads', level: 92 },
+          { id: 'sk-m3', name: 'HubSpot & CRM Lifecycle', level: 90 },
+          { id: 'sk-m4', name: 'Google Analytics 4 & Mixpanel', level: 88 }
+        ]
+      });
+      setAccentColor('#0EA5E9');
+      setTemplate('executive');
+      showToast('Loaded Growth Marketing resume! 📈');
+    } else if (presetKey === 'graduate') {
+      setData({
+        ...DEFAULT_RESUME_DATA,
+        personal: {
+          firstName: 'Samira',
+          lastName: 'Khan',
+          jobTitle: 'Junior Data Analyst',
+          email: 'samira.khan@alumni.edu',
+          phone: '+1 (555) 321-9876',
+          location: 'Boston, MA',
+          website: 'linkedin.com/in/samirakhan-data',
+          summary: 'Driven Data Science honors graduate with strong academic foundation in statistical analysis, Python data wrangling, and predictive modeling. Eager to turn complex datasets into actionable business intelligence.',
+          photo: null
+        },
+        education: [
+          {
+            id: 'edu-g1',
+            degree: 'B.S. in Data Science & Applied Mathematics',
+            institution: 'Boston University',
+            city: 'Boston',
+            location: 'Boston',
+            startDate: '2019',
+            endDate: '2023',
+            gpa: '3.92',
+            honors: 'Summa Cum Laude, Phi Beta Kappa'
+          }
+        ],
+        skills: [
+          { id: 'sk-g1', name: 'Python (Pandas, Scikit-learn)', level: 92 },
+          { id: 'sk-g2', name: 'SQL & Relational Databases', level: 90 },
+          { id: 'sk-g3', name: 'Tableau Data Visualization', level: 85 },
+          { id: 'sk-g4', name: 'R & Statistical Modeling', level: 80 }
+        ]
+      });
+      setAccentColor('#F59E0B');
+      setTemplate('clean');
+      showToast('Loaded Recent Graduate resume! 🎓');
+    }
+  };
+
+  // Export to PDF
+  const downloadPDF = async () => {
+    const paper = document.getElementById('resumePaper');
+    if (!paper) return;
+
+    showToast('Generating high-resolution PDF...');
+    const p = data.personal;
+    const filename = `${p.firstName || 'Resume'}_${p.lastName || ''}_Resume.pdf`.replace(/\s+/g, '_');
+
+    try {
+      // Dynamic import html2pdf
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+
+      const opt = {
+        margin: 0,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          scrollX: 0
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        }
+      };
+
+      await html2pdf().set(opt).from(paper).save();
+      showToast('PDF downloaded successfully! 🎉');
+    } catch (err) {
+      console.warn('html2pdf error, fallback to print:', err);
+      window.print();
+    }
+  };
+
+  // Export Plain Text for ATS
+  const exportPlainText = () => {
+    const p = data.personal;
+    const lines = [];
+
+    lines.push(`${p.firstName || ''} ${p.lastName || ''}`.trim().toUpperCase());
+    if (p.jobTitle) lines.push(p.jobTitle);
+    const contact = [p.email, p.phone, p.location, p.website].filter(Boolean).join(' | ');
+    if (contact) lines.push(contact);
+    lines.push('');
+
+    if (p.summary) {
+      lines.push('=== PROFESSIONAL SUMMARY ===');
+      lines.push(p.summary);
+      lines.push('');
+    }
+
+    if (data.experience.length) {
+      lines.push('=== WORK EXPERIENCE ===');
+      data.experience.forEach(exp => {
+        lines.push(`${exp.title} - ${exp.company}${exp.location ? ' (' + exp.location + ')' : ''}`);
+        lines.push(`${exp.startDate} – ${exp.endDate}`);
+        (exp.bullets || []).filter(b => b.trim()).forEach(b => lines.push(`• ${b}`));
+        lines.push('');
+      });
+    }
+
+    if (data.education.length) {
+      lines.push('=== EDUCATION ===');
+      data.education.forEach(edu => {
+        lines.push(`${edu.degree} - ${edu.institution}${edu.location ? ', ' + edu.location : ''}`);
+        lines.push(`${edu.startDate} – ${edu.endDate}${edu.gpa ? ' (GPA: ' + edu.gpa + ')' : ''}`);
+        lines.push('');
+      });
+    }
+
+    if (data.skills.length) {
+      lines.push('=== CORE SKILLS ===');
+      lines.push(data.skills.map(s => s.name).join(', '));
+      lines.push('');
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${p.firstName || 'Resume'}_${p.lastName || ''}_Resume.txt`.replace(/\s+/g, '_');
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Plain text ATS resume downloaded!');
+  };
+
+  // JSON Backup Export
+  const exportJson = () => {
+    const backup = {
+      version: '2.0',
+      exportedAt: new Date().toISOString(),
+      state: { template, accentColor, fontFamily, fontSize, lineSpacing },
+      data
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${data.personal.firstName || 'Resume'}_Backup.json`.replace(/\s+/g, '_');
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Resume JSON backup exported! 💾');
+  };
+
+  // JSON Import
+  const importJson = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (parsed.data) {
+          setData(parsed.data);
+          if (parsed.state) {
+            if (parsed.state.template) setTemplate(parsed.state.template);
+            if (parsed.state.accentColor) setAccentColor(parsed.state.accentColor);
+            if (parsed.state.fontFamily) setFontFamily(parsed.state.fontFamily);
+          }
+        } else if (parsed.personal) {
+          setData(parsed);
+        }
+        showToast('Resume data restored from JSON! ✨');
+      } catch (err) {
+        alert('Invalid JSON resume file format.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Clear Resume
+  const clearResume = () => {
+    setData({
+      personal: { firstName: '', lastName: '', jobTitle: '', email: '', phone: '', location: '', website: '', summary: '', photo: null },
+      experience: [],
+      education: [],
+      skills: [],
+      languages: [],
+      certifications: [],
+      projects: [],
+      awards: [],
+      volunteer: [],
+      publications: [],
+      hobbies: [],
+      references: [],
+      activeSections: ['personal', 'summary', 'experience', 'education', 'skills']
+    });
+    showToast('Resume cleared! Ready for fresh content.');
+  };
+
+  const value = {
+    data,
+    updatePersonal,
+    updateExperience,
+    addExperience,
+    removeExperience,
+    addBullet,
+    updateBullet,
+    removeBullet,
+    updateEducation,
+    addEducation,
+    removeEducation,
+    updateSkill,
+    addSkill,
+    removeSkill,
+    updateLanguage,
+    addLanguage,
+    removeLanguage,
+    updateCertification,
+    addCertification,
+    removeCertification,
+    updateProject,
+    addProject,
+    removeProject,
+    updateAward,
+    addAward,
+    removeAward,
+    updateVolunteer,
+    addVolunteer,
+    removeVolunteer,
+    updateHobby,
+    addHobby,
+    removeHobby,
+    toggleSection,
+    moveSection,
+    moveSectionToPosition,
+    addCustomSection,
+    deleteCustomSection,
+    updateCustomSectionTitle,
+    addCustomSectionItem,
+    updateCustomSectionItem,
+    removeCustomSectionItem,
+    addCustomSectionBullet,
+    updateCustomSectionBullet,
+    removeCustomSectionBullet,
+    addCustomSectionTag,
+    removeCustomSectionTag,
+    template,
+    setTemplate,
+    accentColor,
+    setAccentColor,
+    fontFamily,
+    setFontFamily,
+    fontSize,
+    setFontSize,
+    lineSpacing,
+    setLineSpacing,
+    zoom,
+    setZoom,
+    activeTab,
+    setActiveTab,
+    calculateScore,
+    loadPreset,
+    downloadPDF,
+    exportPlainText,
+    exportJson,
+    importJson,
+    clearResume,
+    undo,
+    redo,
+    toastMessage,
+    showToast
+  };
+
+  return (
+    <ResumeContext.Provider value={value}>
+      {children}
+    </ResumeContext.Provider>
+  );
+}
+
+export function useResume() {
+  const context = useContext(ResumeContext);
+  if (!context) throw new Error('useResume must be used within ResumeProvider');
+  return context;
+}

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Builder | ResumeCV</title>
+  <meta name="description" content="Build your professional resume with our AI-powered resume builder. Free, ATS-friendly templates." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%232DC08D'/><path d='M6 7h7a3.5 3.5 0 0 1 0 7H6V7z' fill='white'/><path d='M6 14h5l3.5 5H9.5L6 14z' fill='white' opacity='0.7'/></svg>" />
+  <link rel="stylesheet" href="css/builder.css" />
+</head>
+<body>
+
+  <!-- BUILDER HEADER -->
+  <header class="builder-header">
+    <a href="index.html" class="builder-logo">
+      <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#2DC08D"/><path d="M6 7h7a3.5 3.5 0 0 1 0 7H6V7z" fill="white"/><path d="M6 14h5l3.5 5H9.5L6 14z" fill="white" opacity="0.7"/></svg>
+      Resume<span>CV</span>
+    </a>
+
+    <div class="builder-header-center">
+      <button class="template-switcher" id="templateSwitcherBtn">
+        <div class="template-thumb" id="templateThumb"></div>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="6" rx="1" fill="currentColor" opacity="0.7"/><rect x="8" y="1" width="5" height="4" rx="1" fill="currentColor" opacity="0.7"/><rect x="1" y="9" width="5" height="4" rx="1" fill="currentColor" opacity="0.7"/><rect x="8" y="7" width="5" height="6" rx="1" fill="currentColor" opacity="0.7"/></svg>
+        Change Template
+      </button>
+
+      <div style="position:relative;">
+        <button class="color-picker-btn" id="colorPickerBtn">
+          <div class="color-swatch" id="colorSwatch" style="background: #2DC08D;"></div>
+          Color
+        </button>
+        <div class="color-palette-dropdown" id="colorPalette">
+          <p class="color-palette-title">Accent Color</p>
+          <div class="color-swatches" id="colorSwatches"></div>
+        </div>
+      </div>
+
+      <div class="resume-score-badge" id="scoreBadge">
+        ✦ Score: <span id="resumeScore">0</span>%
+      </div>
+    </div>
+
+    <div class="builder-header-actions">
+      <!-- SAMPLE PRESETS -->
+      <div class="builder-dropdown">
+        <button class="btn-secondary-builder" id="sampleDataBtn" title="Load sample resumes">
+          <span>✨</span>
+          <span>Samples</span>
+          <span style="font-size:10px;">▼</span>
+        </button>
+        <div class="builder-dropdown-menu" id="sampleDataMenu">
+          <button class="builder-dropdown-item" data-preset="software">
+            <span>💻</span> Senior Software Engineer
+          </button>
+          <button class="builder-dropdown-item" data-preset="designer">
+            <span>🎨</span> Product & UX Designer
+          </button>
+          <button class="builder-dropdown-item" data-preset="marketing">
+            <span>📈</span> Growth & Marketing Lead
+          </button>
+          <button class="builder-dropdown-item" data-preset="graduate">
+            <span>🎓</span> Recent Graduate / Entry
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-icon" title="Undo" id="undoBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9a6 6 0 1 0 6-6H5M3 9V5M3 9H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn-icon" title="Redo" id="redoBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M15 9a6 6 0 1 1-6-6h4M15 9V5M15 9H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <!-- EXPORT / DOWNLOAD -->
+      <div class="builder-dropdown">
+        <button class="btn-download" id="downloadBtn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download PDF
+        </button>
+      </div>
+
+      <!-- MORE ACTIONS -->
+      <div class="builder-dropdown">
+        <button class="btn-icon" id="moreActionsBtn" title="More Options">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="4" r="1.5" fill="currentColor"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="9" cy="14" r="1.5" fill="currentColor"/></svg>
+        </button>
+        <div class="builder-dropdown-menu" id="moreActionsMenu">
+          <button class="builder-dropdown-item" id="exportTxtBtn">
+            <span>📝</span> Download Plain Text (ATS)
+          </button>
+          <button class="builder-dropdown-item" id="exportJsonBtn">
+            <span>💾</span> Export JSON Backup
+          </button>
+          <button class="builder-dropdown-item" id="importJsonBtn">
+            <span>📂</span> Import JSON File
+          </button>
+          <div class="builder-dropdown-divider"></div>
+          <button class="builder-dropdown-item danger" id="clearAllBtn">
+            <span>🗑️</span> Reset / Clear All
+          </button>
+        </div>
+      </div>
+      <input type="file" id="importJsonInput" accept=".json" style="display:none;" />
+    </div>
+  </header>
+
+  <!-- BUILDER LAYOUT -->
+  <div class="builder-layout" id="builderLayout">
+
+    <!-- EDITOR PANEL -->
+    <div class="editor-panel">
+      <div class="editor-tabs">
+        <button class="editor-tab active" data-tab="content">Content</button>
+        <button class="editor-tab" data-tab="design">Design</button>
+        <button class="editor-tab" data-tab="settings">Settings</button>
+      </div>
+
+      <!-- CONTENT TAB -->
+      <div class="editor-content" id="tab-content">
+        <div class="sections-nav" id="sectionsNav">
+          <!-- Rendered by JS -->
+        </div>
+
+        <button class="add-section-btn" id="addSectionBtn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Add Section
+        </button>
+      </div>
+
+      <!-- DESIGN TAB -->
+      <div class="editor-content" id="tab-design" style="display:none;">
+        <div class="section-form">
+          <div class="form-group">
+            <label>Font Family</label>
+            <select class="form-select" id="fontFamily">
+              <option value="Inter">Inter (Modern)</option>
+              <option value="Rubik">Rubik (Bold)</option>
+              <option value="Georgia">Georgia (Classic)</option>
+              <option value="'Times New Roman'">Times New Roman (Formal)</option>
+              <option value="'Courier New'">Courier New (Technical)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Font Size</label>
+            <select class="form-select" id="fontSize">
+              <option value="small">Small (10pt base)</option>
+              <option value="medium" selected>Medium (11pt base)</option>
+              <option value="large">Large (12pt base)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Line Spacing</label>
+            <select class="form-select" id="lineSpacing">
+              <option value="compact">Compact (1.3)</option>
+              <option value="normal" selected>Normal (1.5)</option>
+              <option value="relaxed">Relaxed (1.7)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Page Margin</label>
+            <select class="form-select" id="pageMargin">
+              <option value="narrow">Narrow (0.5in)</option>
+              <option value="normal" selected>Normal (0.75in)</option>
+              <option value="wide">Wide (1in)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="editor-content" id="tab-settings" style="display:none;">
+        <div class="section-form">
+          <div class="form-group">
+            <label>Resume Language</label>
+            <select class="form-select">
+              <option>English</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>German</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Page Size</label>
+            <select class="form-select">
+              <option>A4 (210 × 297mm)</option>
+              <option>US Letter (216 × 279mm)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date Format</label>
+            <select class="form-select">
+              <option>Jan 2023 – Present</option>
+              <option>January 2023 – Present</option>
+              <option>2023 – Present</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW PANEL -->
+    <div class="preview-panel">
+      <div class="preview-toolbar">
+        <div class="preview-toolbar-left">
+          <span class="preview-label">Preview</span>
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomOut">−</button>
+            <span class="zoom-level" id="zoomLevel">80%</span>
+            <button class="zoom-btn" id="zoomIn">+</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-icon" id="toggleMobilePreview" title="Toggle mobile view" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="5" y="1" width="8" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="14" r="1" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="preview-container" id="previewContainer">
+        <div class="resume-paper" id="resumePaper">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE MODAL -->
+  <div class="modal-overlay" id="templateModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Choose a Template</h2>
+        <button class="modal-close" id="templateModalClose">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2l14 14M16 2L2 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-templates-grid" id="modalTemplatesGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD SECTION MODAL -->
+  <div class="modal-overlay" id="addSectionModal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Section</h2>
+        <button class="modal-close" id="addSectionModalClose">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2l14 14M16 2L2 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div id="addSectionOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- AI SUGGESTION TOAST -->
+  <div id="aiToast" style="
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #7C3AED, #2DC08D);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(124,58,237,0.4);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 500;
+    max-width: 320px;
+    animation: slideInRight 0.3s ease both;
+  ">
+    <span style="font-size:20px;">✨</span>
+    <span id="aiToastText"></span>
+    <button onclick="document.getElementById('aiToast').style.display='none'" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
+  </div>
+
+  <style>
+    @keyframes slideInRight {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="js/pdf-export.js"></script>
+  <script src="js/builder.js"></script>
+</body>
+</html>
