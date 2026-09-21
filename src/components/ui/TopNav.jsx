@@ -55,7 +55,7 @@ export default function TopNav() {
     <>
       <header className="builder-header no-print">
         {/* LOGO (Acts as Home button) */}
-        <a href="/" className="builder-logo" title="ResumeCV Home" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+        <a href="index.html" className="builder-logo" title="ResumeCV Home" style={{ textDecoration: 'none', cursor: 'pointer' }}>
           <svg width="24" height="24" viewBox="0 0 24 24">
             <rect width="24" height="24" rx="6" fill="#2DC08D" />
             <path d="M6 7h7a3.5 3.5 0 0 1 0 7H6V7z" fill="white" />
