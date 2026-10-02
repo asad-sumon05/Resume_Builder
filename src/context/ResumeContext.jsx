@@ -1110,23 +1110,18 @@ export function ResumeProvider({ children }) {
       }));
 
     // ── experience ────────────────────────────────────────────
-    const experience = normalizeList(raw.experience, 'exp').map(exp => ({
-      title: '', company: '', location: '',
-      startDate: '', endDate: '', current: false, bullets: [],
-      ...exp,
-      bullets: Array.isArray(exp.bullets) ? exp.bullets : []
-    }));
+    const experience = normalizeList(raw.experience, 'exp').map(exp => {
+      const bullets = Array.isArray(exp.bullets) ? exp.bullets : [];
+      return { title: '', company: '', location: '', startDate: '', endDate: '', current: false, ...exp, bullets };
+    });
 
     // ── education ────────────────────────────────────────────
-    const education = normalizeList(raw.education, 'edu').map(edu => ({
-      degree: '', institution: '', city: '', location: '',
-      year: '', gradeType: 'CGPA', gpa: '', honors: '',
-      ...edu,
-      // backward compat: if only location exists, copy to city
-      city: edu.city || (edu.location && !edu.location.includes(',')
+    const education = normalizeList(raw.education, 'edu').map(edu => {
+      const city = edu.city || (edu.location && !edu.location.includes(',')
         ? edu.location
-        : (edu.location || '').split(',')[0].trim())
-    }));
+        : (edu.location || '').split(',')[0].trim());
+      return { degree: '', institution: '', city: '', location: '', year: '', gradeType: 'CGPA', gpa: '', honors: '', ...edu, city };
+    });
 
     // ── skills ────────────────────────────────────────────────
     const skills = normalizeList(raw.skills, 'sk').map(s => ({
@@ -1154,11 +1149,10 @@ export function ResumeProvider({ children }) {
     }));
 
     // ── volunteer ────────────────────────────────────────────
-    const volunteer = normalizeList(raw.volunteer, 'vol').map(v => ({
-      role: '', organization: '', startDate: '', endDate: '', bullets: [],
-      ...v,
-      bullets: Array.isArray(v.bullets) ? v.bullets : []
-    }));
+    const volunteer = normalizeList(raw.volunteer, 'vol').map(v => {
+      const bullets = Array.isArray(v.bullets) ? v.bullets : [];
+      return { role: '', organization: '', startDate: '', endDate: '', ...v, bullets };
+    });
 
     // ── hobbies ──────────────────────────────────────────────
     const hobbies = normalizeList(raw.hobbies, 'hob').map(h => ({
