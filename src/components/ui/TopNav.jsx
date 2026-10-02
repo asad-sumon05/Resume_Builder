@@ -17,6 +17,7 @@ export default function TopNav() {
     exportPlainText,
     exportJson,
     importJson,
+    importPdf,
     clearResume,
     editingFileName,
     exitEditingMode
@@ -29,13 +30,18 @@ export default function TopNav() {
   const [showSamplesDropdown, setShowSamplesDropdown] = useState(false);
   const [showMoreDropdown, setShowMoreDropdown] = useState(false);
 
-  const fileInputRef = useRef(null);
+  const pdfInputRef  = useRef(null);   // for PDF upload
+  const jsonInputRef = useRef(null);   // for JSON backup upload
   const score = calculateScore();
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleDocumentClick = (e) => {
-      if (!e.target.closest('.builder-dropdown') && !e.target.closest('.color-picker-btn') && !e.target.closest('.color-palette-dropdown')) {
+      if (
+        !e.target.closest('.builder-dropdown') &&
+        !e.target.closest('.color-picker-btn') &&
+        !e.target.closest('.color-palette-dropdown')
+      ) {
         setShowColorDropdown(false);
         setShowSamplesDropdown(false);
         setShowMoreDropdown(false);
@@ -45,28 +51,30 @@ export default function TopNav() {
     return () => document.removeEventListener('click', handleDocumentClick);
   }, []);
 
-  const handleFileChange = (e) => {
+  const handlePdfChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      importJson(file);
-      e.target.value = '';
-    }
+    if (file) { importPdf(file); e.target.value = ''; }
+  };
+
+  const handleJsonChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) { importJson(file); e.target.value = ''; }
   };
 
   return (
     <>
-      {/* EDITING MODE BANNER */}
+      {/* ── EDITING MODE BANNER ─────────────────────────────────────── */}
       {editingFileName && (
         <div
           className="no-print"
           style={{
-            background: 'linear-gradient(90deg, #1e3a5f 0%, #0ea5e9 100%)',
+            background: 'linear-gradient(90deg, #1a2e4a 0%, #0c7abf 100%)',
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '10px',
-            padding: '6px 16px',
+            padding: '7px 16px',
             fontSize: '12px',
             fontWeight: '600',
             letterSpacing: '0.02em',
@@ -74,11 +82,11 @@ export default function TopNav() {
             zIndex: 100
           }}
         >
-          <span style={{ fontSize: '14px' }}>✏️</span>
+          <span style={{ fontSize: '15px' }}>✏️</span>
           <span>
             Editing: <strong style={{ fontWeight: '800' }}>{editingFileName}</strong>
             <span style={{ opacity: 0.8, fontWeight: '400', marginLeft: '6px' }}>
-              — All changes are saved automatically. Download PDF or Export JSON when done.
+              — Template &amp; design fully restored. Edit and re-download when ready.
             </span>
           </span>
           <button
@@ -86,7 +94,7 @@ export default function TopNav() {
             style={{
               marginLeft: '12px',
               background: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
+              border: '1px solid rgba(255,255,255,0.35)',
               borderRadius: '4px',
               color: '#fff',
               fontSize: '11px',
@@ -95,7 +103,7 @@ export default function TopNav() {
               cursor: 'pointer',
               lineHeight: '1.6'
             }}
-            title="Exit editing mode (does not discard changes)"
+            title="Exit editing mode (changes are kept)"
           >
             ✕ Exit
           </button>
@@ -103,7 +111,7 @@ export default function TopNav() {
       )}
 
       <header className="builder-header no-print">
-        {/* LOGO (Acts as Home button) */}
+        {/* LOGO – acts as Home button */}
         <a href="index.html" className="builder-logo" title="ResumeCV Home" style={{ textDecoration: 'none', cursor: 'pointer' }}>
           <svg width="24" height="24" viewBox="0 0 24 24">
             <rect width="24" height="24" rx="6" fill="#2DC08D" />
@@ -113,7 +121,7 @@ export default function TopNav() {
           Resume<span>CV</span>
         </a>
 
-        {/* CENTER CONTROLS */}
+        {/* ── CENTER CONTROLS ──────────────────────────────────────── */}
         <div className="builder-header-center">
           <button
             className="template-switcher"
@@ -144,7 +152,7 @@ export default function TopNav() {
               <div className="color-swatch" id="colorSwatch" style={{ background: accentColor }}></div>
               Color
             </button>
-            
+
             {showColorDropdown && (
               <div className="color-palette-dropdown open" id="colorPalette">
                 <p className="color-palette-title">Accent Color</p>
@@ -155,10 +163,7 @@ export default function TopNav() {
                       className={`color-swatch-btn ${accentColor === c.color ? 'active' : ''}`}
                       style={{ background: c.color }}
                       title={c.name}
-                      onClick={() => {
-                        setAccentColor(c.color);
-                        setShowColorDropdown(false);
-                      }}
+                      onClick={() => { setAccentColor(c.color); setShowColorDropdown(false); }}
                     />
                   ))}
                 </div>
@@ -176,30 +181,40 @@ export default function TopNav() {
           </div>
         </div>
 
-        {/* RIGHT ACTIONS */}
+        {/* ── RIGHT ACTIONS ────────────────────────────────────────── */}
         <div className="builder-header-actions">
-          {/* OPEN RESUME BUTTON – prominent upload/edit action */}
+
+          {/* ── OPEN / EDIT PDF BUTTON ── primary action ─────────── */}
           <button
             className="btn-secondary-builder"
-            id="openResumeBtn"
-            title="Open a previously saved resume JSON to continue editing"
+            id="openPdfBtn"
+            title="Upload a ResumeCV PDF to continue editing it"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '5px',
+              fontWeight: '700',
               background: editingFileName
-                ? 'linear-gradient(135deg, #1e3a5f, #0ea5e9)'
-                : undefined,
-              color: editingFileName ? '#fff' : undefined,
-              borderColor: editingFileName ? 'transparent' : undefined
+                ? 'linear-gradient(135deg,#1a2e4a,#0c7abf)'
+                : 'linear-gradient(135deg,#0ea5e9,#2DC08D)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0 14px',
+              height: '34px',
+              cursor: 'pointer',
+              fontSize: '12.5px',
+              letterSpacing: '0.01em',
+              boxShadow: '0 2px 8px rgba(14,165,233,0.3)'
             }}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => pdfInputRef.current?.click()}
           >
+            {/* Upload-arrow icon */}
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293l1.414 1.414A1 1 0 0 0 9.414 4H13a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
-              <path d="M8 7v4M6 9l2-2 2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M8 9V2M5 5l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span>{editingFileName ? '⟳ Change File' : 'Open Resume'}</span>
+            {editingFileName ? '⟳ Change PDF' : '📂 Open PDF to Edit'}
           </button>
 
           {/* SAMPLE PRESETS */}
@@ -221,28 +236,16 @@ export default function TopNav() {
             </button>
             {showSamplesDropdown && (
               <div className="builder-dropdown-menu open" id="sampleDataMenu">
-                <button
-                  className="builder-dropdown-item"
-                  onClick={() => { loadPreset('software'); setShowSamplesDropdown(false); }}
-                >
+                <button className="builder-dropdown-item" onClick={() => { loadPreset('software'); setShowSamplesDropdown(false); }}>
                   <span>💻</span> Senior Software Engineer
                 </button>
-                <button
-                  className="builder-dropdown-item"
-                  onClick={() => { loadPreset('designer'); setShowSamplesDropdown(false); }}
-                >
-                  <span>🎨</span> Product & UX Designer
+                <button className="builder-dropdown-item" onClick={() => { loadPreset('designer'); setShowSamplesDropdown(false); }}>
+                  <span>🎨</span> Product &amp; UX Designer
                 </button>
-                <button
-                  className="builder-dropdown-item"
-                  onClick={() => { loadPreset('marketing'); setShowSamplesDropdown(false); }}
-                >
-                  <span>📈</span> Growth & Marketing Lead
+                <button className="builder-dropdown-item" onClick={() => { loadPreset('marketing'); setShowSamplesDropdown(false); }}>
+                  <span>📈</span> Growth &amp; Marketing Lead
                 </button>
-                <button
-                  className="builder-dropdown-item"
-                  onClick={() => { loadPreset('graduate'); setShowSamplesDropdown(false); }}
-                >
+                <button className="builder-dropdown-item" onClick={() => { loadPreset('graduate'); setShowSamplesDropdown(false); }}>
                   <span>🎓</span> Recent Graduate / Entry
                 </button>
               </div>
@@ -251,25 +254,25 @@ export default function TopNav() {
 
           <button className="btn-icon" title="Undo" id="undoBtn" onClick={undo}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M3 9a6 6 0 1 0 6-6H5M3 9V5M3 9H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-          
-          <button className="btn-icon" title="Redo" id="redoBtn" onClick={redo}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M15 9a6 6 0 1 1-6-6h4M15 9V5M15 9H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M3 9a6 6 0 1 0 6-6H5M3 9V5M3 9H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
-          {/* DOWNLOAD BUTTON */}
+          <button className="btn-icon" title="Redo" id="redoBtn" onClick={redo}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M15 9a6 6 0 1 1-6-6h4M15 9V5M15 9H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          {/* DOWNLOAD PDF */}
           <button className="btn-download" id="downloadBtn" onClick={downloadPDF}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2v8M5 7l3 3 3-3M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M8 2v8M5 7l3 3 3-3M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Download PDF
           </button>
 
-          {/* MORE ACTIONS */}
+          {/* MORE ACTIONS ⋮ */}
           <div className="builder-dropdown">
             <button
               className="btn-icon"
@@ -288,8 +291,27 @@ export default function TopNav() {
                 <circle cx="9" cy="14" r="1.5" fill="currentColor" />
               </svg>
             </button>
+
             {showMoreDropdown && (
               <div className="builder-dropdown-menu open" id="moreActionsMenu">
+                {/* ── PDF section ─────────────────────────────── */}
+                <div style={{ padding: '4px 12px', fontSize: '10px', fontWeight: '700', letterSpacing: '0.06em', opacity: 0.5, textTransform: 'uppercase' }}>
+                  Edit via PDF
+                </div>
+                <button
+                  className="builder-dropdown-item"
+                  id="openPdfMenuBtn"
+                  onClick={() => { pdfInputRef.current?.click(); setShowMoreDropdown(false); }}
+                >
+                  <span>📄</span> Open PDF to Edit (re-upload)
+                </button>
+
+                <div className="builder-dropdown-divider"></div>
+
+                {/* ── JSON backup section ──────────────────────── */}
+                <div style={{ padding: '4px 12px', fontSize: '10px', fontWeight: '700', letterSpacing: '0.06em', opacity: 0.5, textTransform: 'uppercase' }}>
+                  JSON Backup
+                </div>
                 <button
                   className="builder-dropdown-item"
                   id="exportJsonBtn"
@@ -299,11 +321,14 @@ export default function TopNav() {
                 </button>
                 <button
                   className="builder-dropdown-item"
-                  id="openResumeMenuBtn"
-                  onClick={() => { fileInputRef.current?.click(); setShowMoreDropdown(false); }}
+                  id="openJsonMenuBtn"
+                  onClick={() => { jsonInputRef.current?.click(); setShowMoreDropdown(false); }}
                 >
-                  <span>📂</span> Open Resume (continue editing)
+                  <span>📂</span> Open JSON Backup
                 </button>
+
+                <div className="builder-dropdown-divider"></div>
+
                 <button
                   className="builder-dropdown-item"
                   id="exportTxtBtn"
@@ -311,14 +336,13 @@ export default function TopNav() {
                 >
                   <span>📝</span> Download Plain Text (ATS)
                 </button>
+
                 <div className="builder-dropdown-divider"></div>
                 <button
                   className="builder-dropdown-item danger"
                   id="clearAllBtn"
                   onClick={() => {
-                    if (window.confirm('Reset all fields? Your changes will be cleared.')) {
-                      clearResume();
-                    }
+                    if (window.confirm('Reset all fields? Your changes will be cleared.')) clearResume();
                     setShowMoreDropdown(false);
                   }}
                 >
@@ -327,13 +351,23 @@ export default function TopNav() {
               </div>
             )}
           </div>
+
+          {/* Hidden file inputs */}
           <input
             type="file"
-            ref={fileInputRef}
+            ref={pdfInputRef}
+            id="importPdfInput"
+            accept=".pdf,application/pdf"
+            style={{ display: 'none' }}
+            onChange={handlePdfChange}
+          />
+          <input
+            type="file"
+            ref={jsonInputRef}
             id="importJsonInput"
             accept=".json"
             style={{ display: 'none' }}
-            onChange={handleFileChange}
+            onChange={handleJsonChange}
           />
         </div>
       </header>

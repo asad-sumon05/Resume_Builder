@@ -979,40 +979,179 @@ export function ResumeProvider({ children }) {
     }
   };
 
-  // Export to PDF
+  // ─── PDF State Encoding & Decoding Helpers ────────────────────────
+  // Standard UTF-8 Base64 encoding/decoding that handles all Unicode characters
+  // (emojis, smart quotes, en-dashes, accent marks, Bangla/Arabic text) safely.
+  const encodePayload = (obj) => {
+    const json = JSON.stringify(obj);
+    const bytes = new TextEncoder().encode(json);
+    let binary = '';
+    const len = bytes.length;
+    for (let i = 0; i < len; i += 8192) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + 8192, len)));
+    }
+    return btoa(binary);
+  };
+
+  const decodePayload = (b64) => {
+    try {
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+    } catch {
+      // Fallback for older escape/unescape encoding
+      try {
+        return JSON.parse(decodeURIComponent(escape(atob(b64))));
+      } catch {
+        return JSON.parse(atob(b64));
+      }
+    }
+  };
+
+  // Safe chunked string extractor for pdf-lib objects (prevents V8 RangeError: Maximum call stack size exceeded)
+  const extractStringFromPdfObj = (obj) => {
+    if (!obj) return null;
+    try {
+      if (typeof obj.asBytes === 'function') {
+        const bytes = obj.asBytes();
+        if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
+          let result = '';
+          const CHUNK = 8192;
+          for (let i = 2; i < bytes.length; i += CHUNK * 2) {
+            const end = Math.min(i + CHUNK * 2, bytes.length);
+            const codes = [];
+            for (let j = i; j < end; j += 2) {
+              if (j + 1 < bytes.length) {
+                codes.push((bytes[j] << 8) | bytes[j + 1]);
+              }
+            }
+            result += String.fromCharCode.apply(null, codes);
+          }
+          return result;
+        }
+        let result = '';
+        const CHUNK = 8192;
+        for (let i = 0; i < bytes.length; i += CHUNK) {
+          const end = Math.min(i + CHUNK, bytes.length);
+          const codes = [];
+          for (let j = i; j < end; j++) {
+            codes.push(bytes[j]);
+          }
+          result += String.fromCharCode.apply(null, codes);
+        }
+        return result;
+      }
+      if (typeof obj.asString === 'function') return obj.asString();
+      if (typeof obj.value === 'string') return obj.value;
+    } catch (e) {
+      console.warn('Error reading PDF object:', e);
+    }
+    return null;
+  };
+
+  const buildEmbedPayload = () => {
+    const rawPayload = {
+      _resumecv: true,
+      _v: '3.0',
+      template,
+      accentColor,
+      fontFamily,
+      fontSize,
+      lineSpacing,
+      data
+    };
+    return {
+      rawObj: rawPayload,
+      base64: encodePayload(rawPayload)
+    };
+  };
+
   const downloadPDF = async () => {
     const paper = document.getElementById('resumePaper');
     if (!paper) return;
 
-    showToast('Generating high-resolution PDF...');
+    showToast('Generating PDF with edit-state embedded…');
     const p = data.personal;
-    const filename = `${p.firstName || 'Resume'}_${p.lastName || ''}_Resume.pdf`.replace(/\s+/g, '_');
+    const filename = `${p.firstName || 'Resume'}_${p.lastName || ''}_ResumeCV.pdf`.replace(/\s+/g, '_');
 
     try {
-      // Dynamic import html2pdf
+      // ── Step 1: render to Blob via html2pdf ──────────────────────
       const html2pdfModule = await import('html2pdf.js');
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
       const opt = {
         margin: 0,
-        filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          scrollX: 0
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait'
-        }
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      await html2pdf().set(opt).from(paper).save();
-      showToast('PDF downloaded successfully! 🎉');
+      const pdfBlob = await html2pdf().set(opt).from(paper).outputPdf('blob');
+
+      // ── Step 2: embed resume state into PDF metadata via pdf-lib ─
+      try {
+        const { PDFDocument, PDFName, PDFHexString } = await import('pdf-lib');
+        const pdfBytes = await pdfBlob.arrayBuffer();
+        const pdfDoc  = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+
+        const { rawObj, base64: payloadB64 } = buildEmbedPayload();
+
+        // 1. Author line for quick template hint
+        pdfDoc.setAuthor(`ResumeCV:${template}:${accentColor}`);
+        pdfDoc.setCreator('ResumeCV Builder v3');
+        pdfDoc.setProducer('ResumeCV');
+
+        // 2. Subject carries full base64 state for restoration
+        pdfDoc.setSubject(`RESUMECV_STATE::${payloadB64}`);
+        pdfDoc.setTitle(`${p.firstName || ''} ${p.lastName || ''} – ${p.jobTitle || 'Resume'}`.trim());
+        pdfDoc.setKeywords([`template:${template}`, `accent:${accentColor}`, 'resumecv']);
+
+        // 3. Custom InfoDict key for redundancy
+        try {
+          const infoDict = pdfDoc.getInfoDict();
+          infoDict.set(PDFName.of('ResumeCVState'), PDFHexString.fromText(payloadB64));
+        } catch (infoErr) {
+          console.warn('InfoDict custom key warning:', infoErr);
+        }
+
+        // 4. Attach JSON file into PDF catalog as embedded file
+        try {
+          const jsonBytes = new TextEncoder().encode(JSON.stringify(rawObj));
+          await pdfDoc.attach(jsonBytes, 'resumecv_data.json', {
+            mimeType: 'application/json',
+            description: 'ResumeCV Edit State Data'
+          });
+        } catch (attachErr) {
+          console.warn('PDF attachment skipped:', attachErr);
+        }
+
+        const finalBytes = await pdfDoc.save({ useObjectStreams: false });
+        const finalBlob  = new Blob([finalBytes], { type: 'application/pdf' });
+
+        // ── Step 3: trigger browser download ──────────────────────
+        const url = URL.createObjectURL(finalBlob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showToast('PDF ready! ✅ You can re-upload it here to continue editing.');
+      } catch (pdfLibErr) {
+        // If pdf-lib fails just download the raw blob
+        console.warn('pdf-lib metadata embedding failed, saving raw PDF:', pdfLibErr);
+        const url = URL.createObjectURL(pdfBlob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDF downloaded! 🎉');
+      }
+
     } catch (err) {
       console.warn('html2pdf error, fallback to print:', err);
       window.print();
@@ -1120,7 +1259,7 @@ export function ResumeProvider({ children }) {
       const city = edu.city || (edu.location && !edu.location.includes(',')
         ? edu.location
         : (edu.location || '').split(',')[0].trim());
-      return { degree: '', institution: '', city: '', location: '', year: '', gradeType: 'CGPA', gpa: '', honors: '', ...edu, city };
+      return { degree: '', institution: '', location: '', year: '', gradeType: 'CGPA', gpa: '', honors: '', ...edu, city };
     });
 
     // ── skills ────────────────────────────────────────────────
@@ -1257,6 +1396,155 @@ export function ResumeProvider({ children }) {
     showToast('Editing mode cleared.');
   };
 
+  // ────────────────────────────────────────────────────────────
+  // importPdf – upload a ResumeCV-generated PDF and restore state
+  // Fully offline, worker-free, zero-CDN implementation using pdf-lib.
+  // Supports:
+  // 1. Embedded JSON attachment ('resumecv_data.json')
+  // 2. Metadata Subject field ('RESUMECV_STATE::<b64>')
+  // 3. Custom InfoDict key ('ResumeCVState')
+  // 4. Metadata Author line ('ResumeCV:<template>:<accentColor>')
+  // ────────────────────────────────────────────────────────────
+  const importPdf = async (file) => {
+    showToast('Reading PDF… please wait.');
+
+    try {
+      const { PDFDocument, PDFName } = await import('pdf-lib');
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+
+      let payload = null;
+
+      // ── Method 1: Check embedded file attachment 'resumecv_data.json' ──
+      try {
+        const names = pdfDoc.catalog.lookup(PDFName.of('Names'));
+        if (names) {
+          const embeddedFiles = names.lookup(PDFName.of('EmbeddedFiles'));
+          if (embeddedFiles) {
+            const efNames = embeddedFiles.lookup(PDFName.of('Names'));
+            if (efNames) {
+              for (let i = 0; i < efNames.size(); i += 2) {
+                const fileSpecRef = efNames.get(i + 1);
+                const fileSpec = pdfDoc.context.lookup(fileSpecRef);
+                const efDict = pdfDoc.context.lookup(fileSpec.lookup(PDFName.of('EF')));
+                const stream = pdfDoc.context.lookup(efDict.lookup(PDFName.of('F')));
+                if (stream) {
+                  const rawBytes = stream.getContents();
+                  try {
+                    let jsonStr = null;
+                    try {
+                      const decoded = new TextDecoder('utf-8').decode(rawBytes);
+                      if (decoded.trim().startsWith('{')) jsonStr = decoded;
+                    } catch {}
+                    if (!jsonStr) {
+                      try {
+                        const pakoModule = await import('pako');
+                        const pako = pakoModule.default || pakoModule;
+                        if (pako?.inflate) jsonStr = pako.inflate(rawBytes, { to: 'string' });
+                      } catch {}
+                    }
+                    if (jsonStr) {
+                      const parsed = JSON.parse(jsonStr);
+                      if (parsed._resumecv || parsed.data || parsed.personal) {
+                        payload = parsed;
+                        break;
+                      }
+                    }
+                  } catch {}
+                }
+              }
+            }
+          }
+        }
+      } catch (attachErr) {
+        console.warn('Attachment check error:', attachErr);
+      }
+
+      // ── Method 2: Extract from Info dictionary (Subject or ResumeCVState) ──
+      if (!payload) {
+        try {
+          const infoDict = pdfDoc.getInfoDict();
+          const stateMarker = 'RESUMECV_STATE::';
+
+          // Try Subject
+          const subjectObj = infoDict.get(PDFName.of('Subject'));
+          const subjectStr = extractStringFromPdfObj(subjectObj);
+          if (subjectStr && subjectStr.includes(stateMarker)) {
+            const b64 = subjectStr.slice(subjectStr.indexOf(stateMarker) + stateMarker.length).trim();
+            payload = decodePayload(b64);
+          }
+
+          // Try custom ResumeCVState key
+          if (!payload) {
+            const customObj = infoDict.get(PDFName.of('ResumeCVState'));
+            const customStr = extractStringFromPdfObj(customObj);
+            if (customStr) {
+              const b64 = customStr.startsWith(stateMarker)
+                ? customStr.slice(stateMarker.length).trim()
+                : customStr.trim();
+              payload = decodePayload(b64);
+            }
+          }
+        } catch (subErr) {
+          console.warn('Subject check error:', subErr);
+        }
+      }
+
+      // ── Method 3: Template hint fallback from Author ────────────
+      if (!payload) {
+        try {
+          const infoDict = pdfDoc.getInfoDict();
+          const authorObj = infoDict.get(PDFName.of('Author'));
+          const authorStr = extractStringFromPdfObj(authorObj) || '';
+          if (authorStr.startsWith('ResumeCV:')) {
+            const parts = authorStr.split(':');
+            const templateHint = parts[1];
+            const accentHint = parts[2];
+            if (templateHint) setTemplate(templateHint);
+            if (accentHint) setAccentColor(accentHint);
+            const displayName = file.name.replace(/\.pdf$/i, '').replace(/_/g, ' ');
+            setEditingFile(displayName);
+            showToast('⚠️ Restored template & accent color from PDF header.');
+            return;
+          }
+        } catch {}
+
+        alert('This PDF does not contain ResumeCV edit data. Make sure it was downloaded from this site.');
+        return;
+      }
+
+      // ── Successfully extracted payload! ─────────────────────────
+      let rawData = null;
+      if (payload.data && typeof payload.data === 'object') {
+        rawData = payload.data;
+      } else if (payload.personal) {
+        rawData = payload;
+      } else {
+        rawData = {};
+      }
+
+      // ── Restore resume data ──────────────────────────────────
+      const normalized = normalizeImportedData(rawData);
+      setData(normalized);
+
+      // ── Restore exact template + design ─────────────────────
+      if (payload.template)    setTemplate(payload.template);
+      if (payload.accentColor) setAccentColor(payload.accentColor);
+      if (payload.fontFamily)  setFontFamily(payload.fontFamily);
+      if (payload.fontSize)    setFontSize(payload.fontSize);
+      if (payload.lineSpacing) setLineSpacing(payload.lineSpacing);
+
+      // ── Activate editing mode banner ─────────────────────────
+      const displayName = file.name.replace(/\.pdf$/i, '').replace(/_/g, ' ');
+      setEditingFile(displayName);
+
+      showToast(`✏️ Resumed editing: ${displayName} (${payload.template || 'template'} restored)`);
+    } catch (err) {
+      console.error('PDF import error:', err);
+      alert('Could not read this PDF. Make sure it was exported from ResumeCV Builder.');
+    }
+  };
+
   // Clear Resume
   const clearResume = () => {
     setData({
@@ -1346,6 +1634,7 @@ export function ResumeProvider({ children }) {
     exportPlainText,
     exportJson,
     importJson,
+    importPdf,
     clearResume,
     editingFileName,
     exitEditingMode,

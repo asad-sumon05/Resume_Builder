@@ -19,7 +19,29 @@ export default function PhotoUpload({
 
     const reader = new FileReader();
     reader.onload = () => {
-      onPhotoChange(reader.result);
+      const img = new Image();
+      img.onload = () => {
+        const MAX_W = 400;
+        const MAX_H = 500;
+        let w = img.width;
+        let h = img.height;
+        if (w > MAX_W || h > MAX_H) {
+          const ratio = Math.min(MAX_W / w, MAX_H / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const optimized = canvas.toDataURL('image/jpeg', 0.88);
+        onPhotoChange(optimized);
+      };
+      img.onerror = () => {
+        onPhotoChange(reader.result);
+      };
+      img.src = reader.result;
     };
     reader.readAsDataURL(file);
   };
