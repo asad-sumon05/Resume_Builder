@@ -17,7 +17,9 @@ export default function TopNav() {
     exportPlainText,
     exportJson,
     importJson,
-    clearResume
+    clearResume,
+    editingFileName,
+    exitEditingMode
   } = useResume();
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -53,6 +55,53 @@ export default function TopNav() {
 
   return (
     <>
+      {/* EDITING MODE BANNER */}
+      {editingFileName && (
+        <div
+          className="no-print"
+          style={{
+            background: 'linear-gradient(90deg, #1e3a5f 0%, #0ea5e9 100%)',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            padding: '6px 16px',
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '0.02em',
+            position: 'relative',
+            zIndex: 100
+          }}
+        >
+          <span style={{ fontSize: '14px' }}>✏️</span>
+          <span>
+            Editing: <strong style={{ fontWeight: '800' }}>{editingFileName}</strong>
+            <span style={{ opacity: 0.8, fontWeight: '400', marginLeft: '6px' }}>
+              — All changes are saved automatically. Download PDF or Export JSON when done.
+            </span>
+          </span>
+          <button
+            onClick={exitEditingMode}
+            style={{
+              marginLeft: '12px',
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: '700',
+              padding: '2px 8px',
+              cursor: 'pointer',
+              lineHeight: '1.6'
+            }}
+            title="Exit editing mode (does not discard changes)"
+          >
+            ✕ Exit
+          </button>
+        </div>
+      )}
+
       <header className="builder-header no-print">
         {/* LOGO (Acts as Home button) */}
         <a href="index.html" className="builder-logo" title="ResumeCV Home" style={{ textDecoration: 'none', cursor: 'pointer' }}>
@@ -129,6 +178,30 @@ export default function TopNav() {
 
         {/* RIGHT ACTIONS */}
         <div className="builder-header-actions">
+          {/* OPEN RESUME BUTTON – prominent upload/edit action */}
+          <button
+            className="btn-secondary-builder"
+            id="openResumeBtn"
+            title="Open a previously saved resume JSON to continue editing"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              background: editingFileName
+                ? 'linear-gradient(135deg, #1e3a5f, #0ea5e9)'
+                : undefined,
+              color: editingFileName ? '#fff' : undefined,
+              borderColor: editingFileName ? 'transparent' : undefined
+            }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293l1.414 1.414A1 1 0 0 0 9.414 4H13a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
+              <path d="M8 7v4M6 9l2-2 2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>{editingFileName ? '⟳ Change File' : 'Open Resume'}</span>
+          </button>
+
           {/* SAMPLE PRESETS */}
           <div className="builder-dropdown">
             <button
@@ -219,24 +292,24 @@ export default function TopNav() {
               <div className="builder-dropdown-menu open" id="moreActionsMenu">
                 <button
                   className="builder-dropdown-item"
+                  id="exportJsonBtn"
+                  onClick={() => { exportJson(); setShowMoreDropdown(false); }}
+                >
+                  <span>💾</span> Save / Export JSON Backup
+                </button>
+                <button
+                  className="builder-dropdown-item"
+                  id="openResumeMenuBtn"
+                  onClick={() => { fileInputRef.current?.click(); setShowMoreDropdown(false); }}
+                >
+                  <span>📂</span> Open Resume (continue editing)
+                </button>
+                <button
+                  className="builder-dropdown-item"
                   id="exportTxtBtn"
                   onClick={() => { exportPlainText(); setShowMoreDropdown(false); }}
                 >
                   <span>📝</span> Download Plain Text (ATS)
-                </button>
-                <button
-                  className="builder-dropdown-item"
-                  id="exportJsonBtn"
-                  onClick={() => { exportJson(); setShowMoreDropdown(false); }}
-                >
-                  <span>💾</span> Export JSON Backup
-                </button>
-                <button
-                  className="builder-dropdown-item"
-                  id="importJsonBtn"
-                  onClick={() => { fileInputRef.current?.click(); setShowMoreDropdown(false); }}
-                >
-                  <span>📂</span> Import JSON File
                 </button>
                 <div className="builder-dropdown-divider"></div>
                 <button

@@ -1071,10 +1071,132 @@ export function ResumeProvider({ children }) {
     showToast('Plain text ATS resume downloaded!');
   };
 
-  // JSON Backup Export
+  // ────────────────────────────────────────────────────────────
+  // Editing-mode state  (tracks which file is being edited)
+  // ────────────────────────────────────────────────────────────
+  const [editingFileName, setEditingFileName] = useState(() => {
+    try { return localStorage.getItem('resumecv_editing_file') || null; } catch { return null; }
+  });
+
+  const setEditingFile = (name) => {
+    setEditingFileName(name);
+    try {
+      if (name) localStorage.setItem('resumecv_editing_file', name);
+      else localStorage.removeItem('resumecv_editing_file');
+    } catch {}
+  };
+
+  // ────────────────────────────────────────────────────────────
+  // normalizeImportedData – ensures every section has required
+  // fields and IDs so the canvas renders without errors
+  // ────────────────────────────────────────────────────────────
+  const normalizeImportedData = (raw) => {
+    const makeid = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    // ── personal ───────────────────────────────────────────────
+    const personal = {
+      firstName: '', lastName: '', jobTitle: '',
+      email: '', phone: '', location: '',
+      website: '', summary: '', photo: null,
+      ...(raw.personal || {})
+    };
+
+    // ── helper: ensure each item has a stable id ────────────────
+    const normalizeList = (arr, prefix, defaults = {}) =>
+      (Array.isArray(arr) ? arr : []).map((item, i) => ({
+        ...defaults,
+        ...item,
+        id: item.id || makeid(prefix)
+      }));
+
+    // ── experience ────────────────────────────────────────────
+    const experience = normalizeList(raw.experience, 'exp').map(exp => ({
+      title: '', company: '', location: '',
+      startDate: '', endDate: '', current: false, bullets: [],
+      ...exp,
+      bullets: Array.isArray(exp.bullets) ? exp.bullets : []
+    }));
+
+    // ── education ────────────────────────────────────────────
+    const education = normalizeList(raw.education, 'edu').map(edu => ({
+      degree: '', institution: '', city: '', location: '',
+      year: '', gradeType: 'CGPA', gpa: '', honors: '',
+      ...edu,
+      // backward compat: if only location exists, copy to city
+      city: edu.city || (edu.location && !edu.location.includes(',')
+        ? edu.location
+        : (edu.location || '').split(',')[0].trim())
+    }));
+
+    // ── skills ────────────────────────────────────────────────
+    const skills = normalizeList(raw.skills, 'sk').map(s => ({
+      name: '', level: 80, ...s
+    }));
+
+    // ── languages ────────────────────────────────────────────
+    const languages = normalizeList(raw.languages, 'lang').map(l => ({
+      name: '', level: '', ...l
+    }));
+
+    // ── certifications ───────────────────────────────────────
+    const certifications = normalizeList(raw.certifications, 'cert').map(c => ({
+      name: '', issuer: '', date: '', ...c
+    }));
+
+    // ── projects ─────────────────────────────────────────────
+    const projects = normalizeList(raw.projects, 'proj').map(p => ({
+      name: '', url: '', description: '', technologies: '', ...p
+    }));
+
+    // ── awards ───────────────────────────────────────────────
+    const awards = normalizeList(raw.awards, 'aw').map(a => ({
+      title: '', issuer: '', date: '', description: '', ...a
+    }));
+
+    // ── volunteer ────────────────────────────────────────────
+    const volunteer = normalizeList(raw.volunteer, 'vol').map(v => ({
+      role: '', organization: '', startDate: '', endDate: '', bullets: [],
+      ...v,
+      bullets: Array.isArray(v.bullets) ? v.bullets : []
+    }));
+
+    // ── hobbies ──────────────────────────────────────────────
+    const hobbies = normalizeList(raw.hobbies, 'hob').map(h => ({
+      name: '', description: '', ...h
+    }));
+
+    // ── publications & references ─────────────────────────────
+    const publications = normalizeList(raw.publications, 'pub');
+    const references   = normalizeList(raw.references, 'ref');
+
+    // ── customSections ────────────────────────────────────────
+    const customSections = raw.customSections || {};
+
+    // ── activeSections – preserve order, fill in missing sections
+    const defaultOrder = ['personal', 'summary', 'experience', 'education', 'skills',
+      'languages', 'certifications', 'projects', 'awards', 'volunteer', 'hobbies'];
+    const activeSections = Array.isArray(raw.activeSections)
+      ? raw.activeSections
+      : defaultOrder.filter(s => {
+          if (s === 'personal') return true;
+          if (s === 'summary') return !!personal.summary;
+          const map = { experience, education, skills, languages, certifications,
+                        projects, awards, volunteer, hobbies, publications, references };
+          return map[s]?.length > 0;
+        });
+
+    return {
+      personal, experience, education, skills, languages,
+      certifications, projects, awards, volunteer,
+      publications, hobbies, references, customSections, activeSections
+    };
+  };
+
+  // JSON Backup Export  (adds appName + schema version for future proofing)
   const exportJson = () => {
     const backup = {
-      version: '2.0',
+      appName: 'ResumeCV',
+      version: '3.0',
       exportedAt: new Date().toISOString(),
       state: { template, accentColor, fontFamily, fontSize, lineSpacing },
       data
@@ -1083,34 +1205,62 @@ export function ResumeProvider({ children }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${data.personal.firstName || 'Resume'}_Backup.json`.replace(/\s+/g, '_');
+    a.download = `${data.personal.firstName || 'Resume'}_${data.personal.lastName || ''}_ResumeCV.json`.replace(/\s+/g, '_');
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Resume JSON backup exported! 💾');
+    showToast('Resume backup exported! 💾 Open it later to continue editing.');
   };
 
-  // JSON Import
+  // ────────────────────────────────────────────────────────────
+  // importJson  – smart importer with full state restoration
+  // ────────────────────────────────────────────────────────────
   const importJson = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const parsed = JSON.parse(e.target.result);
-        if (parsed.data) {
-          setData(parsed.data);
-          if (parsed.state) {
-            if (parsed.state.template) setTemplate(parsed.state.template);
-            if (parsed.state.accentColor) setAccentColor(parsed.state.accentColor);
-            if (parsed.state.fontFamily) setFontFamily(parsed.state.fontFamily);
-          }
+
+        // ── Determine raw data section ─────────────────────────
+        let rawData = null;
+        if (parsed.data && typeof parsed.data === 'object') {
+          rawData = parsed.data;            // v2 / v3 format
         } else if (parsed.personal) {
-          setData(parsed);
+          rawData = parsed;                 // bare data object
         }
-        showToast('Resume data restored from JSON! ✨');
+
+        if (!rawData) {
+          alert('This file does not appear to be a valid ResumeCV backup.');
+          return;
+        }
+
+        // ── Normalize & restore data ───────────────────────────
+        const normalized = normalizeImportedData(rawData);
+        setData(normalized);
+
+        // ── Restore design state ───────────────────────────────
+        const state = parsed.state || {};
+        if (state.template)     setTemplate(state.template);
+        if (state.accentColor)  setAccentColor(state.accentColor);
+        if (state.fontFamily)   setFontFamily(state.fontFamily);
+        if (state.fontSize)     setFontSize(state.fontSize);
+        if (state.lineSpacing)  setLineSpacing(state.lineSpacing);
+
+        // ── Mark editing mode ─────────────────────────────────
+        const displayName = file.name.replace(/\.json$/i, '').replace(/_/g, ' ');
+        setEditingFile(displayName);
+
+        showToast(`✏️ Editing: ${displayName}`);
       } catch (err) {
-        alert('Invalid JSON resume file format.');
+        console.error('Import error:', err);
+        alert('Could not read this file. Make sure it is a valid ResumeCV JSON backup.');
       }
     };
     reader.readAsText(file);
+  };
+
+  const exitEditingMode = () => {
+    setEditingFile(null);
+    showToast('Editing mode cleared.');
   };
 
   // Clear Resume
@@ -1128,8 +1278,10 @@ export function ResumeProvider({ children }) {
       publications: [],
       hobbies: [],
       references: [],
+      customSections: {},
       activeSections: ['personal', 'summary', 'experience', 'education', 'skills']
     });
+    setEditingFile(null);
     showToast('Resume cleared! Ready for fresh content.');
   };
 
@@ -1201,6 +1353,8 @@ export function ResumeProvider({ children }) {
     exportJson,
     importJson,
     clearResume,
+    editingFileName,
+    exitEditingMode,
     undo,
     redo,
     toastMessage,
