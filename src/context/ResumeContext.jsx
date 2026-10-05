@@ -92,8 +92,39 @@ const DEFAULT_RESUME_DATA = {
     { id: 'hob-1', name: 'Marathon Running', description: 'Boston Marathon 2023 Finisher' },
     { id: 'hob-2', name: 'Open Source', description: 'Contributor to React ecosystem' }
   ],
-  references: [],
+  references: [
+    {
+      id: 'ref-1',
+      name: 'Dr. Sarah Jenkins',
+      position: 'VP of Engineering',
+      company: 'TechCorp Inc.',
+      email: 'sarah.jenkins@techcorp.com',
+      phone: '+1 (555) 987-6543'
+    }
+  ],
+  declaration: {
+    title: 'DECLARATION',
+    statement: 'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.',
+    signeeName: '',
+    signatureText: '',
+    signatureImage: null,
+    date: '',
+    place: ''
+  },
+  sectionColumns: {
+    experience: 'left',
+    projects: 'left',
+    education: 'left',
+    skills: 'right',
+    languages: 'right',
+    certifications: 'right',
+    awards: 'right',
+    volunteer: 'right',
+    hobbies: 'right',
+    references: 'right'
+  },
   customSections: {},
+  pageBreaks: {},
   activeSections: ['personal', 'summary', 'experience', 'education', 'skills', 'languages', 'certifications', 'projects', 'awards', 'volunteer', 'hobbies']
 };
 
@@ -145,7 +176,8 @@ export const SECTIONS_CONFIG = [
   { id: 'volunteer', label: 'Volunteering', icon: '❤️', required: false },
   { id: 'publications', label: 'Publications', icon: '📚', required: false },
   { id: 'hobbies', label: 'Hobbies & Passions', icon: '🎯', required: false },
-  { id: 'references', label: 'References', icon: '👥', required: false }
+  { id: 'references', label: 'References', icon: '👥', required: false },
+  { id: 'declaration', label: 'Declaration & Signature', icon: '✍️', required: false }
 ];
 
 export function ResumeProvider({ children }) {
@@ -196,6 +228,7 @@ export function ResumeProvider({ children }) {
   const [zoom, setZoom] = useState(0.85);
   const [activeTab, setActiveTab] = useState('builder'); // 'landing', 'templates', 'builder'
   const [toastMessage, setToastMessage] = useState(null);
+  const [sectionMargins, setSectionMargins] = useState({});
 
   // History stack for Undo / Redo
   const [history, setHistory] = useState([]);
@@ -517,16 +550,227 @@ export function ResumeProvider({ children }) {
     updateData(prev => ({ ...prev, hobbies: (prev.hobbies || []).filter(h => h.id !== id) }));
   };
 
+  // References Management
+  const addReference = () => {
+    updateData(prev => ({
+      ...prev,
+      references: [
+        ...(prev.references || []),
+        {
+          id: 'ref-' + Date.now(),
+          name: '',
+          position: '',
+          company: '',
+          email: '',
+          phone: ''
+        }
+      ]
+    }));
+  };
+
+  const updateReference = (id, field, value) => {
+    updateData(prev => ({
+      ...prev,
+      references: (prev.references || []).map(r => r.id === id ? { ...r, [field]: value } : r)
+    }));
+  };
+
+  const removeReference = (id) => {
+    updateData(prev => ({
+      ...prev,
+      references: (prev.references || []).filter(r => r.id !== id)
+    }));
+  };
+
   // Section visibility toggle
   const toggleSection = (sectionId) => {
     updateData(prev => {
       const active = prev.activeSections || [];
       const isPresent = active.includes(sectionId);
+      const nextActive = isPresent ? active.filter(s => s !== sectionId) : [...active, sectionId];
+      const nextData = {
+        ...prev,
+        activeSections: nextActive
+      };
+
+      // If re-enabling a section that has no items, seed with a clean initial item so it renders
+      if (!isPresent) {
+        if (sectionId === 'hobbies' && (!prev.hobbies || prev.hobbies.length === 0)) {
+          nextData.hobbies = [{ id: 'hob-' + Date.now(), name: 'Activity / Interest', description: '' }];
+        } else if (sectionId === 'awards' && (!prev.awards || prev.awards.length === 0)) {
+          nextData.awards = [{ id: 'aw-' + Date.now(), title: 'Honors / Award Title', issuer: 'Issuer / Organization', date: '2024', description: '' }];
+        } else if (sectionId === 'volunteer' && (!prev.volunteer || prev.volunteer.length === 0)) {
+          nextData.volunteer = [{ id: 'vol-' + Date.now(), role: 'Volunteer Role', organization: 'Organization', startDate: '2023', endDate: 'Present', bullets: ['Community and team initiative contribution'] }];
+        } else if (sectionId === 'certifications' && (!prev.certifications || prev.certifications.length === 0)) {
+          nextData.certifications = [{ id: 'cert-' + Date.now(), name: 'Professional Certification', issuer: 'Issuing Body', date: '2024' }];
+        } else if (sectionId === 'projects' && (!prev.projects || prev.projects.length === 0)) {
+          nextData.projects = [{ id: 'proj-' + Date.now(), name: 'Key Project', url: '', description: 'Description of key accomplishment and impact', technologies: '' }];
+        } else if (sectionId === 'languages' && (!prev.languages || prev.languages.length === 0)) {
+          nextData.languages = [{ id: 'lang-' + Date.now(), name: 'Language', level: 'Fluent' }];
+        } else if (sectionId === 'references' && (!prev.references || prev.references.length === 0)) {
+          nextData.references = [{
+            id: 'ref-' + Date.now(),
+            name: 'Dr. Sarah Jenkins',
+            position: 'VP of Engineering',
+            company: 'TechCorp Inc.',
+            email: 'sarah.jenkins@techcorp.com',
+            phone: '+1 (555) 987-6543'
+          }];
+        } else if (sectionId === 'declaration' && !prev.declaration?.statement) {
+          const fullName = `${prev.personal?.firstName || ''} ${prev.personal?.lastName || ''}`.trim();
+          nextData.declaration = {
+            title: 'DECLARATION',
+            statement: 'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.',
+            signeeName: fullName || 'Abdul Moin Khan',
+            signatureText: fullName || 'Moin Khan',
+            signatureImage: null,
+            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+            place: prev.personal?.location || ''
+          };
+        }
+      }
+
+      return nextData;
+    });
+  };
+
+  // Declaration Management
+  const updateDeclaration = (field, value) => {
+    updateData(prev => ({
+      ...prev,
+      declaration: {
+        ...(prev.declaration || {
+          title: 'DECLARATION',
+          statement: 'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.',
+          signeeName: '',
+          signatureText: '',
+          signatureImage: null,
+          date: '',
+          place: ''
+        }),
+        [field]: value
+      }
+    }));
+  };
+
+  // Section Column Placement (Left / Right)
+  const setSectionColumn = (sectionId, column) => {
+    if (!sectionId) return;
+    updateData(prev => ({
+      ...prev,
+      sectionColumns: {
+        ...(prev.sectionColumns || {}),
+        [sectionId]: column
+      }
+    }));
+  };
+
+  const toggleSectionColumn = (sectionId, fallback = 'left') => {
+    if (!sectionId) return;
+    updateData(prev => {
+      const currentCol = prev.sectionColumns?.[sectionId] || fallback;
+      const nextCol = currentCol === 'left' ? 'right' : 'left';
+      showToast(`Moved to ${nextCol === 'left' ? 'Left' : 'Right'} column`);
       return {
         ...prev,
-        activeSections: isPresent ? active.filter(s => s !== sectionId) : [...active, sectionId]
+        sectionColumns: {
+          ...(prev.sectionColumns || {}),
+          [sectionId]: nextCol
+        }
       };
     });
+  };
+
+  // Section Page Break toggle (for manual new-page control)
+  const toggleSectionPageBreak = (sectionId) => {
+    if (!sectionId) return;
+    updateData(prev => {
+      const prevBreaks = prev.pageBreaks || {};
+      const nextBreaks = { ...prevBreaks };
+      if (nextBreaks[sectionId]) {
+        delete nextBreaks[sectionId];
+        showToast('Page break removed');
+      } else {
+        nextBreaks[sectionId] = true;
+        showToast('Section moved to new page');
+      }
+      return { ...prev, pageBreaks: nextBreaks };
+    });
+  };
+
+  // Delete a specific page (pageIndex: 0-indexed, e.g. 1 for Page 2)
+  // If the page is blank, compacts layout and clears page breaks.
+  // If the page has sections, removes those sections from the resume.
+  const deletePage = (pageIndex) => {
+    const targetPageNumber = pageIndex + 1;
+    const paper = document.getElementById('resumePaper');
+
+    let sectionsOnThisPage = [];
+    if (paper) {
+      const paperRect = paper.getBoundingClientRect();
+      const z = zoom || 1;
+      const pageTop = pageIndex * 1123;
+      const pageBottom = (pageIndex + 1) * 1123;
+
+      const sectionEls = Array.from(paper.querySelectorAll('.section-wrapper'));
+      sectionEls.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const top = (rect.top - paperRect.top) / z;
+        const secId = el.getAttribute('data-section-id');
+        if (top >= (pageTop - 40) && top < pageBottom && secId) {
+          sectionsOnThisPage.push(secId);
+        }
+      });
+    }
+
+    updateData(prev => {
+      let updatedActive = [...(prev.activeSections || [])];
+      let updatedCustom = { ...(prev.customSections || {}) };
+      let updatedBreaks = { ...(prev.pageBreaks || {}) };
+
+      sectionsOnThisPage.forEach(s => delete updatedBreaks[s]);
+
+      if (sectionsOnThisPage.length > 0) {
+        updatedActive = updatedActive.filter(s => !sectionsOnThisPage.includes(s));
+        sectionsOnThisPage.forEach(s => {
+          if (s.startsWith('custom_')) delete updatedCustom[s];
+        });
+        showToast(`Page ${targetPageNumber} deleted (${sectionsOnThisPage.length} section${sectionsOnThisPage.length > 1 ? 's' : ''} removed)`);
+      } else {
+        // Full blank page or whitespace overflow
+        updatedBreaks = {};
+        showToast(`Blank Page ${targetPageNumber} deleted`);
+      }
+
+      return {
+        ...prev,
+        activeSections: updatedActive,
+        customSections: updatedCustom,
+        pageBreaks: updatedBreaks
+      };
+    });
+
+    // Auto-compact line spacing if page was blank overflow
+    if (sectionsOnThisPage.length === 0) {
+      if (lineSpacing === 'relaxed') setLineSpacing('normal');
+      else if (lineSpacing === 'normal') setLineSpacing('compact');
+    }
+
+    // Reset inline marginTop on all sections immediately
+    if (paper) {
+      const sectionEls = Array.from(paper.querySelectorAll('.section-wrapper'));
+      sectionEls.forEach(el => {
+        el.style.marginTop = '';
+        delete el.dataset.hasPageBreak;
+      });
+    }
+
+    // Trigger recalculation
+    setTimeout(() => {
+      if (window.__recalculateResumePagination) {
+        window.__recalculateResumePagination();
+      }
+    }, 60);
   };
 
   // Move Section Up/Down
@@ -622,18 +866,74 @@ export function ResumeProvider({ children }) {
     return id;
   };
 
+  // Delete Section (Universal: works for standard sections and custom sections)
+  const deleteSection = (sectionId) => {
+    if (!sectionId || sectionId === 'personal') return;
+
+    const labelMap = {
+      summary: 'Profile Summary',
+      experience: 'Work Experience',
+      education: 'Education',
+      skills: 'Skills',
+      languages: 'Languages',
+      certifications: 'Certifications',
+      projects: 'Projects',
+      awards: 'Awards & Honors',
+      volunteer: 'Volunteering',
+      hobbies: 'Hobbies & Passions',
+      references: 'References',
+      declaration: 'Declaration & Signature'
+    };
+    const label = labelMap[sectionId] || data.customSections?.[sectionId]?.title || 'Section';
+
+    updateData(prev => {
+      const active = (prev.activeSections || []).filter(s => s !== sectionId);
+      const nextBreaks = { ...(prev.pageBreaks || {}) };
+      delete nextBreaks[sectionId];
+
+      const nextData = {
+        ...prev,
+        activeSections: active,
+        pageBreaks: nextBreaks
+      };
+
+      if (sectionId.startsWith('custom_')) {
+        const nextCustom = { ...(prev.customSections || {}) };
+        delete nextCustom[sectionId];
+        nextData.customSections = nextCustom;
+      } else {
+        if (Array.isArray(prev[sectionId])) {
+          nextData[sectionId] = [];
+        } else if (sectionId === 'summary') {
+          nextData.personal = { ...prev.personal, summary: '' };
+        } else if (sectionId === 'declaration') {
+          nextData.declaration = {
+            title: 'DECLARATION',
+            statement: '',
+            signeeName: '',
+            signatureText: '',
+            signatureImage: null,
+            date: '',
+            place: ''
+          };
+        }
+      }
+
+      return nextData;
+    });
+
+    showToast(`Deleted ${label} section`);
+
+    setTimeout(() => {
+      if (window.__recalculateResumePagination) {
+        window.__recalculateResumePagination();
+      }
+    }, 60);
+  };
+
   // Delete Custom Section
   const deleteCustomSection = (id) => {
-    updateData(prev => {
-      const updatedCustom = { ...(prev.customSections || {}) };
-      delete updatedCustom[id];
-      return {
-        ...prev,
-        customSections: updatedCustom,
-        activeSections: (prev.activeSections || []).filter(s => s !== id)
-      };
-    });
-    showToast('Custom section removed');
+    deleteSection(id);
   };
 
   // Update Custom Section Title
@@ -1136,6 +1436,11 @@ export function ResumeProvider({ children }) {
     paper.style.boxShadow = 'none';
     paper.style.borderRadius = '0px';
 
+    // Recalculate pagination at 1:1 scale before canvas rendering
+    if (typeof window !== 'undefined' && window.__recalculateResumePagination) {
+      window.__recalculateResumePagination(1);
+    }
+
     try {
       // ── Step 1: render to Blob via html2pdf ──────────────────────
       const html2pdfModule = await import('html2pdf.js');
@@ -1223,7 +1528,7 @@ export function ResumeProvider({ children }) {
       console.warn('html2pdf error, fallback to print:', err);
       window.print();
     } finally {
-      // ── Restore on-screen interactive & zoom styles ──────────────
+      // Restore on-screen interactive & zoom styles ──────────────
       paper.style.transition = prevTransition;
       paper.style.transform = prevTransform;
       paper.style.marginBottom = prevMarginBottom;
@@ -1236,6 +1541,10 @@ export function ResumeProvider({ children }) {
         el.removeAttribute('data-prev-display');
         el.style.display = prev;
       });
+
+      if (typeof window !== 'undefined' && window.__recalculateResumePagination) {
+        window.__recalculateResumePagination();
+      }
     }
   };
 
@@ -1278,6 +1587,25 @@ export function ResumeProvider({ children }) {
     if (data.skills.length) {
       lines.push('=== CORE SKILLS ===');
       lines.push(data.skills.map(s => s.name).join(', '));
+      lines.push('');
+    }
+
+    if ((data.references || []).length) {
+      lines.push('=== REFERENCES ===');
+      data.references.forEach(r => {
+        lines.push(`${r.name}${r.position ? ' - ' + r.position : ''}${r.company ? ' (' + r.company + ')' : ''}`);
+        const refContact = [r.email, r.phone].filter(Boolean).join(' | ');
+        if (refContact) lines.push(refContact);
+        lines.push('');
+      });
+    }
+
+    if ((data.activeSections || []).includes('declaration') && data.declaration?.statement) {
+      lines.push('=== DECLARATION ===');
+      lines.push(data.declaration.statement);
+      if (data.declaration.signeeName) lines.push(`Signee: ${data.declaration.signeeName}`);
+      const meta = [data.declaration.date && `Date: ${data.declaration.date}`, data.declaration.place && `Place: ${data.declaration.place}`].filter(Boolean).join(' | ');
+      if (meta) lines.push(meta);
       lines.push('');
     }
 
@@ -1391,6 +1719,25 @@ export function ResumeProvider({ children }) {
     const publications = normalizeList(raw.publications, 'pub');
     const references   = normalizeList(raw.references, 'ref');
 
+    // ── declaration ───────────────────────────────────────────
+    const declaration = raw.declaration ? {
+      title: raw.declaration.title || 'DECLARATION',
+      statement: raw.declaration.statement !== undefined ? raw.declaration.statement : 'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.',
+      signeeName: raw.declaration.signeeName || '',
+      signatureText: raw.declaration.signatureText || '',
+      signatureImage: raw.declaration.signatureImage || null,
+      date: raw.declaration.date || '',
+      place: raw.declaration.place || ''
+    } : {
+      title: 'DECLARATION',
+      statement: 'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.',
+      signeeName: '',
+      signatureText: '',
+      signatureImage: null,
+      date: '',
+      place: ''
+    };
+
     // ── customSections ────────────────────────────────────────
     const customSections = raw.customSections || {};
 
@@ -1410,7 +1757,10 @@ export function ResumeProvider({ children }) {
     return {
       personal, experience, education, skills, languages,
       certifications, projects, awards, volunteer,
-      publications, hobbies, references, customSections, activeSections
+      publications, hobbies, references, declaration,
+      sectionColumns: raw.sectionColumns || {},
+      customSections, activeSections,
+      pageBreaks: raw.pageBreaks || {}
     };
   };
 
@@ -1689,7 +2039,18 @@ export function ResumeProvider({ children }) {
     updateHobby,
     addHobby,
     removeHobby,
+    addReference,
+    updateReference,
+    removeReference,
+    updateDeclaration,
+    setSectionColumn,
+    toggleSectionColumn,
     toggleSection,
+    toggleSectionPageBreak,
+    deletePage,
+    deleteSection,
+    sectionMargins,
+    setSectionMargins,
     moveSection,
     moveSectionToPosition,
     addCustomSection,

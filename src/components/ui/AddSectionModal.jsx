@@ -12,7 +12,9 @@ const STANDARD_SECTIONS = [
   { id: 'languages', name: 'Languages', icon: '🌐', desc: 'Foreign languages and fluency ratings' },
   { id: 'awards', name: 'Awards & Honors', icon: '⭐', desc: 'Competitions, distinctions, and recognitions' },
   { id: 'volunteer', name: 'Volunteering', icon: '❤️', desc: 'Community leadership, causes, and mentoring' },
-  { id: 'hobbies', name: 'Hobbies & Passions', icon: '🎯', desc: 'Extracurricular interests outside of work' }
+  { id: 'hobbies', name: 'Hobbies & Passions', icon: '🎯', desc: 'Extracurricular interests outside of work' },
+  { id: 'references', name: 'References', icon: '👥', desc: 'Professional mentors, managers, and recommendation contacts' },
+  { id: 'declaration', name: 'Declaration & Signature', icon: '✍️', desc: 'Formal truthfulness declaration and signature block' }
 ];
 
 const STYLE_OPTIONS = [

@@ -6,6 +6,7 @@ import SectionBlock from '../components/canvas/SectionBlock';
 import PhotoUpload from '../components/canvas/PhotoUpload';
 import CustomSectionBlock from '../components/canvas/CustomSectionBlock';
 import EducationItem from '../components/canvas/EducationItem';
+import DeclarationBlock from '../components/canvas/DeclarationBlock';
 
 export default function Minimalist() {
   const {
@@ -15,6 +16,13 @@ export default function Minimalist() {
     updateBullet,
     updateEducation,
     updateSkill,
+    updateLanguage,
+    updateCertification,
+    updateProject,
+    updateAward,
+    updateVolunteer,
+    updateHobby,
+    updateReference,
     accentColor
   } = useResume();
 
@@ -92,7 +100,7 @@ export default function Minimalist() {
           return (
             <SectionBlock key="experience" sectionId="experience" title="Experience" accentColor={accentColor}>
               {data.experience.map((exp) => (
-                <div key={exp.id} style={{ display: 'block', marginBottom: '18px' }}>
+                <div key={exp.id} className="resume-entry" style={{ display: 'block', marginBottom: '18px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span style={{ fontSize: '12px', fontWeight: '700', color: '#111827' }}>
                       <EditableText value={exp.title} onChange={(v) => updateExperience(exp.id, 'title', v)} placeholder="Role" />
@@ -194,8 +202,97 @@ export default function Minimalist() {
           );
         }
 
+        // Awards
+        if (secId === 'awards' && (data.awards || []).length > 0) {
+          return (
+            <SectionBlock key="awards" sectionId="awards" title="Awards & Honors" accentColor={accentColor}>
+              {data.awards.map((a) => (
+                <div key={a.id} className="resume-entry" style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#111827' }}>
+                    <EditableText value={a.title} onChange={(v) => updateAward(a.id, 'title', v)} placeholder="Award Title" />
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#6b7280' }}>
+                    <EditableText value={a.issuer} onChange={(v) => updateAward(a.id, 'issuer', v)} placeholder="Issuer" />
+                    {a.date ? ` · ${a.date}` : ''}
+                  </div>
+                </div>
+              ))}
+            </SectionBlock>
+          );
+        }
+
+        // Volunteer
+        if (secId === 'volunteer' && (data.volunteer || []).length > 0) {
+          return (
+            <SectionBlock key="volunteer" sectionId="volunteer" title="Volunteering" accentColor={accentColor}>
+              {data.volunteer.map((v) => (
+                <div key={v.id} className="resume-entry" style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#111827' }}>
+                    <EditableText value={v.role} onChange={(v) => updateVolunteer(v.id, 'role', v)} placeholder="Role" />
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#6b7280' }}>
+                    <EditableText value={v.organization} onChange={(v) => updateVolunteer(v.id, 'organization', v)} placeholder="Organization" />
+                  </div>
+                </div>
+              ))}
+            </SectionBlock>
+          );
+        }
+
+        // Hobbies
+        if (secId === 'hobbies' && (data.hobbies || []).length > 0) {
+          return (
+            <SectionBlock key="hobbies" sectionId="hobbies" title="Hobbies & Interests" accentColor={accentColor}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {data.hobbies.map((h) => (
+                  <span key={h.id} style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '9px', color: '#374151' }}>
+                    <EditableText value={h.name} onChange={(v) => updateHobby(h.id, 'name', v)} placeholder="Hobby" style={{ fontWeight: '600' }} />
+                    {h.description && (
+                      <span style={{ color: '#6b7280', marginLeft: '4px' }}>
+                        — <EditableText value={h.description} onChange={(v) => updateHobby(h.id, 'description', v)} placeholder="Description" />
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </SectionBlock>
+          );
+        }
+
+        // References
+        if (secId === 'references' && (data.references || []).length > 0) {
+          return (
+            <SectionBlock key="references" sectionId="references" title="References" accentColor={accentColor}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {(data.references || []).map((ref) => (
+                  <div key={ref.id} className="resume-entry" style={{ fontSize: '9.5px', marginBottom: '8px' }}>
+                    <div style={{ fontWeight: '700', color: '#111827' }}>
+                      <EditableText value={ref.name} onChange={(v) => updateReference(ref.id, 'name', v)} placeholder="Reference Name" />
+                    </div>
+                    <div style={{ color: '#4b5563' }}>
+                      <EditableText value={ref.position} onChange={(v) => updateReference(ref.id, 'position', v)} placeholder="Position" />
+                      {ref.company && <span> at <EditableText value={ref.company} onChange={(v) => updateReference(ref.id, 'company', v)} placeholder="Company" /></span>}
+                    </div>
+                    <div style={{ color: '#6b7280', fontSize: '8.5px' }}>
+                      <EditableText value={ref.email} onChange={(v) => updateReference(ref.id, 'email', v)} placeholder="Email" />
+                      {ref.phone && <span> • <EditableText value={ref.phone} onChange={(v) => updateReference(ref.id, 'phone', v)} placeholder="Phone" /></span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionBlock>
+          );
+        }
+
         return null;
       })}
+
+      {/* FULL-WIDTH DECLARATION AT BOTTOM */}
+      {active.includes('declaration') && (
+        <div style={{ width: '100%', marginTop: '20px' }}>
+          <DeclarationBlock accentColor={accentColor} variant="minimal" />
+        </div>
+      )}
     </div>
   );
 }

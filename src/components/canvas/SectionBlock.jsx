@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import EditableText from './EditableText';
-import { ArrowUp, ArrowDown, MoveVertical, ArrowUpToLine, ArrowDownToLine, MoreVertical } from 'lucide-react';
+import { ArrowUp, ArrowDown, MoveVertical, ArrowUpToLine, ArrowDownToLine, MoreVertical, FileText, Trash2 } from 'lucide-react';
 
 export default function SectionBlock({
   sectionId,
@@ -12,10 +12,17 @@ export default function SectionBlock({
   className = '',
   style = {}
 }) {
-  const { data, moveSection, moveSectionToPosition } = useResume();
+  const { data, moveSection, moveSectionToPosition, toggleSectionPageBreak, deleteSection, sectionMargins, setSectionColumn, toggleSectionColumn } = useResume();
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+  const currentColumn = data.sectionColumns?.[sectionId] || (
+    ['experience', 'projects', 'education'].includes(sectionId) ? 'left' : 'right'
+  );
+
+  const autoMargin = sectionMargins?.[sectionId] || 0;
+  const hasManualBreak = !!(data?.pageBreaks && sectionId && data.pageBreaks[sectionId]);
 
   const activeSections = data.activeSections || [];
   const currentIndex = sectionId ? activeSections.indexOf(sectionId) : -1;
@@ -49,6 +56,8 @@ export default function SectionBlock({
       case 'awards': return 'Awards & Honors';
       case 'volunteer': return 'Volunteering';
       case 'hobbies': return 'Hobbies & Passions';
+      case 'references': return 'References';
+      case 'declaration': return 'Declaration';
       default:
         if (secId.startsWith('custom_')) {
           return data.customSections?.[secId]?.title || 'Custom Section';
@@ -60,6 +69,7 @@ export default function SectionBlock({
   return (
     <section
       className={`section-wrapper ${className}`}
+      data-section-id={sectionId}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);
@@ -69,9 +79,10 @@ export default function SectionBlock({
         position: 'relative',
         marginBottom: '20px',
         borderRadius: '6px',
-        transition: 'all 0.15s ease',
+        transition: 'box-shadow 0.15s ease',
         boxShadow: isHovered ? `0 0 0 1px ${accentColor}40` : 'none',
-        ...style
+        ...style,
+        marginTop: autoMargin ? `${autoMargin}px` : (style?.marginTop || undefined)
       }}
     >
       {/* FLOATING HOVER ACTION TOOLBAR (Hidden in Print/PDF) */}
@@ -154,6 +165,37 @@ export default function SectionBlock({
           >
             <ArrowDown size={12} />
           </button>
+
+          {/* Column Toggle (Left / Right) */}
+          {sectionId && sectionId !== 'personal' && sectionId !== 'declaration' && (
+            <button
+              type="button"
+              title={`Switch to ${currentColumn === 'left' ? 'Right' : 'Left'} column`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSectionColumn(sectionId, currentColumn);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
+                padding: '2px 7px',
+                height: '22px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                color: '#334155',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: '600',
+                transition: 'all 0.15s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = `${accentColor}18`; e.currentTarget.style.color = accentColor; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#334155'; }}
+            >
+              <span>{currentColumn === 'left' ? '⬅ Left' : 'Right ➡'}</span>
+            </button>
+          )}
 
           {/* Move Menu Dropdown / Drop-up */}
           <div ref={menuRef} style={{ position: 'relative' }}>
@@ -265,6 +307,66 @@ export default function SectionBlock({
                   <span>Move to Bottom of Page</span>
                 </button>
 
+                {/* Column Placement inside Menu */}
+                {sectionId && sectionId !== 'personal' && sectionId !== 'declaration' && (
+                  <>
+                    <div style={{ height: '1px', background: '#f1f5f9', margin: '4px 0' }} />
+                    <div style={{ padding: '4px 8px', fontSize: '9px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Column Placement
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSectionColumn(sectionId, 'left');
+                        setIsMenuOpen(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        background: currentColumn === 'left' ? `${accentColor}18` : 'transparent',
+                        color: currentColumn === 'left' ? accentColor : '#1e293b',
+                        fontWeight: currentColumn === 'left' ? '700' : '500',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span>⬅ Place in Left Column</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSectionColumn(sectionId, 'right');
+                        setIsMenuOpen(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        background: currentColumn === 'right' ? `${accentColor}18` : 'transparent',
+                        color: currentColumn === 'right' ? accentColor : '#1e293b',
+                        fontWeight: currentColumn === 'right' ? '700' : '500',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <span>Place in Right Column ➡</span>
+                    </button>
+                  </>
+                )}
+
                 {/* Divider */}
                 <div style={{ height: '1px', background: '#f1f5f9', margin: '4px 0' }} />
 
@@ -312,6 +414,80 @@ export default function SectionBlock({
               </div>
             )}
           </div>
+
+          {/* Manual Page Break Toggle */}
+          <button
+            type="button"
+            title={hasManualBreak ? "Remove page break (starts on same page if room)" : "Start this section on a new page (Page Break)"}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (toggleSectionPageBreak) toggleSectionPageBreak(sectionId);
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              padding: '2px 7px',
+              height: '22px',
+              borderRadius: '12px',
+              border: hasManualBreak ? `1px solid ${accentColor}` : 'none',
+              background: hasManualBreak ? `${accentColor}25` : '#f1f5f9',
+              color: hasManualBreak ? accentColor : '#334155',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: hasManualBreak ? '700' : '600',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!hasManualBreak) e.currentTarget.style.background = `${accentColor}15`;
+            }}
+            onMouseLeave={(e) => {
+              if (!hasManualBreak) e.currentTarget.style.background = '#f1f5f9';
+            }}
+          >
+            <FileText size={11} />
+            <span>{hasManualBreak ? 'Page Break ✓' : '+ Break'}</span>
+          </button>
+
+          {/* Delete Section Button */}
+          {sectionId && sectionId !== 'personal' && (
+            <button
+              type="button"
+              title={`Delete ${getSectionLabel(sectionId)} section`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (deleteSection) deleteSection(sectionId);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                padding: '2px 7px',
+                height: '22px',
+                borderRadius: '12px',
+                border: '1px solid #fecaca',
+                background: '#fee2e2',
+                color: '#dc2626',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: '700',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#dc2626';
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.borderColor = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#fee2e2';
+                e.currentTarget.style.color = '#dc2626';
+                e.currentTarget.style.borderColor = '#fecaca';
+              }}
+            >
+              <Trash2 size={11} />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
       )}
 

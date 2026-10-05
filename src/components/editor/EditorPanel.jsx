@@ -28,7 +28,22 @@ export default function EditorPanel() {
     updateProject,
     addProject,
     removeProject,
+    updateAward,
+    addAward,
+    removeAward,
+    updateVolunteer,
+    addVolunteer,
+    removeVolunteer,
+    updateHobby,
+    addHobby,
+    removeHobby,
+    addReference,
+    updateReference,
+    removeReference,
+    updateDeclaration,
+    setSectionColumn,
     moveSection,
+    deleteSection,
     addCustomSection,
     deleteCustomSection,
     updateCustomSectionTitle,
@@ -68,7 +83,24 @@ export default function EditorPanel() {
       case 'projects': return `${(data.projects || []).length} project${(data.projects || []).length !== 1 ? 's' : ''}`;
       case 'awards': return `${(data.awards || []).length} award${(data.awards || []).length !== 1 ? 's' : ''}`;
       case 'volunteer': return `${(data.volunteer || []).length} role${(data.volunteer || []).length !== 1 ? 's' : ''}`;
+      case 'hobbies': return `${(data.hobbies || []).length} interest${(data.hobbies || []).length !== 1 ? 's' : ''}`;
+      case 'references': return `${(data.references || []).length} reference${(data.references || []).length !== 1 ? 's' : ''}`;
+      case 'declaration': return data.declaration?.statement ? '✓ Configured' : 'Add declaration';
       default: return '';
+    }
+  };
+
+  const sigInputRef = useRef(null);
+
+  const handleSignatureUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        updateDeclaration('signatureImage', event.target?.result);
+        showToast('Signature image uploaded!');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -161,6 +193,45 @@ export default function EditorPanel() {
                       </div>
                     </div>
                     <div className="section-nav-actions" onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      {/* Left/Right Column Quick Switcher */}
+                      {sec.id !== 'personal' && sec.id !== 'declaration' && (
+                        <div style={{ display: 'inline-flex', borderRadius: '4px', border: '1px solid #cbd5e1', overflow: 'hidden', marginRight: '4px' }}>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setSectionColumn(sec.id, 'left'); }}
+                            style={{
+                              padding: '2px 5px',
+                              fontSize: '9px',
+                              border: 'none',
+                              background: (data.sectionColumns?.[sec.id] || (['experience', 'projects', 'education'].includes(sec.id) ? 'left' : 'right')) === 'left' ? accentColor : '#ffffff',
+                              color: (data.sectionColumns?.[sec.id] || (['experience', 'projects', 'education'].includes(sec.id) ? 'left' : 'right')) === 'left' ? '#ffffff' : '#64748b',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                            title="Place in Left Column"
+                          >
+                            L
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setSectionColumn(sec.id, 'right'); }}
+                            style={{
+                              padding: '2px 5px',
+                              fontSize: '9px',
+                              border: 'none',
+                              borderLeft: '1px solid #cbd5e1',
+                              background: (data.sectionColumns?.[sec.id] || (['experience', 'projects', 'education'].includes(sec.id) ? 'left' : 'right')) === 'right' ? accentColor : '#ffffff',
+                              color: (data.sectionColumns?.[sec.id] || (['experience', 'projects', 'education'].includes(sec.id) ? 'left' : 'right')) === 'right' ? '#ffffff' : '#64748b',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                            title="Place in Right Column"
+                          >
+                            R
+                          </button>
+                        </div>
+                      )}
+
                       <button
                         type="button"
                         disabled={idx === 0}
@@ -197,6 +268,32 @@ export default function EditorPanel() {
                       >
                         <ArrowDown size={13} />
                       </button>
+
+                      {sec.id !== 'personal' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (deleteSection) deleteSection(sec.id);
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '3px 4px',
+                            cursor: 'pointer',
+                            color: '#94a3b8',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            borderRadius: '4px',
+                            transition: 'color 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                          title={`Delete ${sec.label} section`}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
                       <span
                         className="section-nav-action"
                         style={{ transform: isActive ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', cursor: 'pointer', marginLeft: '4px' }}
@@ -833,6 +930,349 @@ export default function EditorPanel() {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      )}
+
+                      {/* AWARDS FORM */}
+                      {sec.id === 'awards' && (
+                        <div>
+                          <div className="form-section-header">
+                            <span className="form-section-title">Awards & Honors</span>
+                            <button className="form-section-add-btn" onClick={() => addAward()}>
+                              <Plus size={14} /> Add Award
+                            </button>
+                          </div>
+                          {(data.awards || []).map((a, idx) => (
+                            <div key={a.id || idx} className="entry-card">
+                              <div className="entry-card-header">
+                                <div className="entry-card-title">{a.title || 'Award Title'}</div>
+                                <button className="entry-action-btn delete" onClick={() => removeAward(a.id)}>
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                              <div className="entry-body">
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Award / Honor Title"
+                                    value={a.title || ''}
+                                    onChange={(e) => updateAward(a.id, 'title', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="Conferring Body / Organization"
+                                    value={a.issuer || ''}
+                                    onChange={(e) => updateAward(a.id, 'issuer', e.target.value)}
+                                  />
+                                </div>
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Year / Date (e.g. 2023)"
+                                    value={a.date || ''}
+                                    onChange={(e) => updateAward(a.id, 'date', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="Brief Description or Context"
+                                    value={a.description || ''}
+                                    onChange={(e) => updateAward(a.id, 'description', e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* VOLUNTEER FORM */}
+                      {sec.id === 'volunteer' && (
+                        <div>
+                          <div className="form-section-header">
+                            <span className="form-section-title">Volunteering & Community</span>
+                            <button className="form-section-add-btn" onClick={() => addVolunteer()}>
+                              <Plus size={14} /> Add Volunteer Role
+                            </button>
+                          </div>
+                          {(data.volunteer || []).map((v, idx) => (
+                            <div key={v.id || idx} className="entry-card">
+                              <div className="entry-card-header">
+                                <div className="entry-card-title">{v.role || 'Volunteer Role'}</div>
+                                <button className="entry-action-btn delete" onClick={() => removeVolunteer(v.id)}>
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                              <div className="entry-body">
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Role Title"
+                                    value={v.role || ''}
+                                    onChange={(e) => updateVolunteer(v.id, 'role', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="Organization"
+                                    value={v.organization || ''}
+                                    onChange={(e) => updateVolunteer(v.id, 'organization', e.target.value)}
+                                  />
+                                </div>
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Start Date"
+                                    value={v.startDate || ''}
+                                    onChange={(e) => updateVolunteer(v.id, 'startDate', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="End Date"
+                                    value={v.endDate || ''}
+                                    onChange={(e) => updateVolunteer(v.id, 'endDate', e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* HOBBIES FORM */}
+                      {sec.id === 'hobbies' && (
+                        <div>
+                          <div className="form-section-header">
+                            <span className="form-section-title">Hobbies & Passions</span>
+                            <button className="form-section-add-btn" onClick={() => addHobby()}>
+                              <Plus size={14} /> Add Hobby
+                            </button>
+                          </div>
+                          {(data.hobbies || []).map((h, idx) => (
+                            <div key={h.id || idx} className="entry-card">
+                              <div className="entry-card-header">
+                                <div className="entry-card-title">{h.name || 'Hobby / Passion'}</div>
+                                <button className="entry-action-btn delete" onClick={() => removeHobby(h.id)}>
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                              <div className="entry-body">
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Hobby Name (e.g. Marathon Running, Open Source, Chess)"
+                                    value={h.name || ''}
+                                    onChange={(e) => updateHobby(h.id, 'name', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="Details / Distinction (optional)"
+                                    value={h.description || ''}
+                                    onChange={(e) => updateHobby(h.id, 'description', e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* REFERENCES FORM */}
+                      {sec.id === 'references' && (
+                        <div>
+                          <div className="form-section-header">
+                            <span className="form-section-title">Professional References</span>
+                            <button className="form-section-add-btn" onClick={() => addReference()}>
+                              <Plus size={14} /> Add Reference
+                            </button>
+                          </div>
+                          {(data.references || []).map((ref, idx) => (
+                            <div key={ref.id || idx} className="entry-card">
+                              <div className="entry-card-header">
+                                <div className="entry-card-title">{ref.name || 'Reference Contact'}</div>
+                                <button className="entry-action-btn delete" onClick={() => removeReference(ref.id)}>
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                              <div className="entry-body">
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Full Name (e.g. Dr. Sarah Jenkins)"
+                                    value={ref.name || ''}
+                                    onChange={(e) => updateReference(ref.id, 'name', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="Job Title / Role (e.g. VP of Engineering)"
+                                    value={ref.position || ''}
+                                    onChange={(e) => updateReference(ref.id, 'position', e.target.value)}
+                                  />
+                                </div>
+                                <div className="form-row">
+                                  <input
+                                    className="form-input"
+                                    placeholder="Company / Institution (e.g. TechCorp Inc.)"
+                                    value={ref.company || ''}
+                                    onChange={(e) => updateReference(ref.id, 'company', e.target.value)}
+                                  />
+                                  <input
+                                    className="form-input"
+                                    placeholder="Email Address"
+                                    value={ref.email || ''}
+                                    onChange={(e) => updateReference(ref.id, 'email', e.target.value)}
+                                  />
+                                </div>
+                                <input
+                                  className="form-input"
+                                  placeholder="Phone Number (e.g. +1 (555) 987-6543)"
+                                  value={ref.phone || ''}
+                                  onChange={(e) => updateReference(ref.id, 'phone', e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* DECLARATION FORM */}
+                      {sec.id === 'declaration' && (
+                        <div className="section-form">
+                          <input
+                            type="file"
+                            ref={sigInputRef}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleSignatureUpload}
+                          />
+
+                          <div className="form-group" style={{ marginBottom: '12px' }}>
+                            <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#1e293b' }}>Section Header</label>
+                            <input
+                              className="form-input"
+                              placeholder="DECLARATION"
+                              value={data.declaration?.title || 'DECLARATION'}
+                              onChange={(e) => updateDeclaration('title', e.target.value)}
+                              style={{ fontWeight: '700' }}
+                            />
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                              <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#1e293b' }}>Declaration Statement</label>
+                              <button
+                                type="button"
+                                className="ai-suggest-btn"
+                                onClick={() => {
+                                  const statements = [
+                                    'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.',
+                                    'I hereby certify that all the particulars and credentials given above are true, complete, and authentic to the best of my knowledge.',
+                                    'I solemnly declare that the facts and figures stated in this resume are completely correct and verifiable upon request.'
+                                  ];
+                                  const nextStmt = statements[Math.floor(Math.random() * statements.length)];
+                                  updateDeclaration('statement', nextStmt);
+                                  showToast('Declaration statement updated! ✨');
+                                }}
+                                style={{ fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <Sparkles size={12} />
+                                <span>AI Suggest</span>
+                              </button>
+                            </div>
+                            <textarea
+                              className="form-textarea"
+                              rows={3}
+                              placeholder="The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge."
+                              value={data.declaration?.statement || ''}
+                              onChange={(e) => updateDeclaration('statement', e.target.value)}
+                              style={{ fontSize: '12px', lineHeight: '1.5' }}
+                            />
+                          </div>
+
+                          {/* Signature & Name Controls */}
+                          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+                            <div style={{ fontSize: '11.5px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>
+                              Signature & Signee Information
+                            </div>
+
+                            <div className="form-row">
+                              <div className="form-group">
+                                <label style={{ fontSize: '11px', color: '#64748b' }}>Printed Full Name</label>
+                                <input
+                                  className="form-input"
+                                  placeholder={`${data.personal?.firstName || 'Abdul'} ${data.personal?.lastName || 'Moin Khan'}`.trim()}
+                                  value={data.declaration?.signeeName || ''}
+                                  onChange={(e) => updateDeclaration('signeeName', e.target.value)}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label style={{ fontSize: '11px', color: '#64748b' }}>Handwritten Signature Text</label>
+                                <input
+                                  className="form-input"
+                                  placeholder="Moin Khan"
+                                  value={data.declaration?.signatureText || ''}
+                                  onChange={(e) => updateDeclaration('signatureText', e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Cursive Signature Live Preview & Upload */}
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                              <div>
+                                <span style={{ fontSize: '10.5px', color: '#64748b', display: 'block' }}>Live Signature Preview:</span>
+                                {data.declaration?.signatureImage ? (
+                                  <img
+                                    src={data.declaration.signatureImage}
+                                    alt="Uploaded Signature"
+                                    style={{ height: '36px', objectFit: 'contain', marginTop: '4px' }}
+                                  />
+                                ) : (
+                                  <span style={{ fontFamily: 'Caveat, "Dancing Script", cursive', fontSize: '26px', color: '#1e293b', fontWeight: '600' }}>
+                                    {data.declaration?.signatureText || data.declaration?.signeeName || `${data.personal?.firstName || 'Moin'} ${data.personal?.lastName || 'Khan'}`}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => sigInputRef.current?.click()}
+                                  className="btn-ghost"
+                                  style={{ fontSize: '11px', padding: '5px 10px' }}
+                                >
+                                  Upload Image
+                                </button>
+                                {data.declaration?.signatureImage && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updateDeclaration('signatureImage', null)}
+                                    style={{ fontSize: '11px', padding: '5px 8px', border: '1px solid #fecaca', background: '#fff5f5', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}
+                                  >
+                                    Reset to Text
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="form-row">
+                            <div className="form-group">
+                              <label style={{ fontSize: '11px', color: '#64748b' }}>Date (Optional)</label>
+                              <input
+                                className="form-input"
+                                placeholder="e.g. Oct 5, 2026"
+                                value={data.declaration?.date || ''}
+                                onChange={(e) => updateDeclaration('date', e.target.value)}
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label style={{ fontSize: '11px', color: '#64748b' }}>Place / City (Optional)</label>
+                              <input
+                                className="form-input"
+                                placeholder="e.g. New York, USA"
+                                value={data.declaration?.place || ''}
+                                onChange={(e) => updateDeclaration('place', e.target.value)}
+                              />
+                            </div>
+                          </div>
                         </div>
                       )}
 
