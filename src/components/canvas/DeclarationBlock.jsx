@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import EditableText from './EditableText';
 import SectionBlock from './SectionBlock';
-import { Minus, Plus, SlidersHorizontal } from 'lucide-react';
+import { Minus, Plus, SlidersHorizontal, Eye, EyeOff } from 'lucide-react';
 
 export default function DeclarationBlock({
   accentColor = '#2DC08D',
@@ -11,6 +11,7 @@ export default function DeclarationBlock({
   const { data, updateDeclaration } = useResume();
   const d = data.declaration || {};
   const [spaceHovered, setSpaceHovered] = useState(false);
+  const [showSliderPopup, setShowSliderPopup] = useState(false);
 
   const title = d.title || 'DECLARATION:';
   const statement = d.statement || 'The undersigned, I declare that the information specified here is accurate to the best of my belief and knowledge.';
@@ -19,8 +20,8 @@ export default function DeclarationBlock({
 
   const isDark = variant === 'tech' || variant === 'darkpro';
 
-  // Configurable empty space above declaration (default 48px, minimum 0px)
-  const emptySpace = d.emptySpace !== undefined ? Math.max(0, Number(d.emptySpace)) : 48;
+  // Configurable empty space above declaration (default 80px, minimum 0px)
+  const emptySpace = d.emptySpace !== undefined ? Math.max(0, Number(d.emptySpace)) : 80;
   const showDivider = !!d.showDivider;
 
   return (
@@ -38,8 +39,10 @@ export default function DeclarationBlock({
           justifyContent: 'center',
           position: 'relative',
           transition: 'height 0.15s ease',
-          background: spaceHovered ? `${accentColor}08` : 'transparent',
-          borderRadius: '4px'
+          background: spaceHovered || showSliderPopup ? `${accentColor}08` : 'transparent',
+          border: spaceHovered || showSliderPopup ? `1px dashed ${accentColor}50` : '1px dashed transparent',
+          borderRadius: '6px',
+          boxSizing: 'border-box'
         }}
       >
         {/* Subtle dividing line */}
@@ -53,8 +56,8 @@ export default function DeclarationBlock({
           />
         )}
 
-        {/* Hover spacing adjustment pill (hidden in print/PDF) */}
-        {spaceHovered && (
+        {/* Floating Spacing Adjustment Toolbar (Always interactive, hidden in print/PDF) */}
+        {(spaceHovered || showSliderPopup) && (
           <div
             data-html2canvas-ignore="true"
             className="no-print"
@@ -63,82 +66,133 @@ export default function DeclarationBlock({
               top: '50%',
               transform: 'translateY(-50%)',
               background: '#ffffff',
-              border: `1px solid ${accentColor}40`,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-              borderRadius: '20px',
-              padding: '2px 8px',
+              border: `1px solid ${accentColor}50`,
+              boxShadow: '0 6px 20px rgba(0,0,0,0.14)',
+              borderRadius: '24px',
+              padding: '4px 10px',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              zIndex: 30,
-              fontSize: '10px',
-              color: '#334155'
+              gap: '8px',
+              zIndex: 35,
+              fontSize: '11px',
+              color: '#1e293b'
             }}
           >
-            <span style={{ fontWeight: '700', color: accentColor, display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <SlidersHorizontal size={10} />
-              Space: {emptySpace}px
+            <span style={{ fontWeight: '700', color: accentColor, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <SlidersHorizontal size={12} />
+              Gap: {emptySpace}px
             </span>
 
-            {/* Decrease Space */}
+            {/* Quick Button: Decrease */}
             <button
               type="button"
-              title="Decrease Empty Space (-8px)"
-              onClick={() => updateDeclaration('emptySpace', Math.max(0, emptySpace - 8))}
+              title="Decrease Empty Space (-10px)"
+              onClick={() => updateDeclaration('emptySpace', Math.max(0, emptySpace - 10))}
               style={{
                 background: '#f1f5f9',
-                border: 'none',
+                border: '1px solid #cbd5e1',
                 borderRadius: '50%',
-                width: '18px',
-                height: '18px',
+                width: '20px',
+                height: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                color: '#334155'
+                color: '#1e293b',
+                transition: 'background 0.1s'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = `${accentColor}20`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
             >
-              <Minus size={10} />
+              <Minus size={11} />
             </button>
 
-            {/* Increase Space */}
+            {/* Interactive Live Slider directly on canvas */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="range"
+                min="0"
+                max="250"
+                step="5"
+                value={emptySpace}
+                onChange={(e) => updateDeclaration('emptySpace', parseInt(e.target.value, 10))}
+                style={{ width: '80px', accentColor, cursor: 'pointer' }}
+                title="Drag to adjust empty space"
+              />
+            </div>
+
+            {/* Quick Button: Increase */}
             <button
               type="button"
-              title="Increase Empty Space (+8px)"
-              onClick={() => updateDeclaration('emptySpace', emptySpace + 8)}
+              title="Increase Empty Space (+10px)"
+              onClick={() => updateDeclaration('emptySpace', emptySpace + 10)}
               style={{
                 background: '#f1f5f9',
-                border: 'none',
+                border: '1px solid #cbd5e1',
                 borderRadius: '50%',
-                width: '18px',
-                height: '18px',
+                width: '20px',
+                height: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                color: '#334155'
+                color: '#1e293b',
+                transition: 'background 0.1s'
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = `${accentColor}20`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
             >
-              <Plus size={10} />
+              <Plus size={11} />
             </button>
 
-            {/* Divider Toggle */}
+            {/* Preset Buttons */}
+            <div style={{ display: 'flex', gap: '3px', marginLeft: '2px', borderLeft: '1px solid #e2e8f0', paddingLeft: '6px' }}>
+              {[
+                { label: '40px', val: 40 },
+                { label: '80px', val: 80 },
+                { label: '140px', val: 140 }
+              ].map(p => (
+                <button
+                  key={p.val}
+                  type="button"
+                  onClick={() => updateDeclaration('emptySpace', p.val)}
+                  style={{
+                    padding: '2px 5px',
+                    borderRadius: '4px',
+                    border: emptySpace === p.val ? `1px solid ${accentColor}` : '1px solid #e2e8f0',
+                    background: emptySpace === p.val ? `${accentColor}18` : '#f8fafc',
+                    color: emptySpace === p.val ? accentColor : '#64748b',
+                    fontSize: '9.5px',
+                    fontWeight: emptySpace === p.val ? '700' : '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Divider Line Toggle */}
             <button
               type="button"
-              title={showDivider ? 'Hide divider line' : 'Show divider line'}
+              title={showDivider ? 'Remove divider line' : 'Add divider line'}
               onClick={() => updateDeclaration('showDivider', !showDivider)}
               style={{
                 background: showDivider ? `${accentColor}20` : '#f1f5f9',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '2px 6px',
-                fontSize: '9px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '2px 7px',
+                fontSize: '9.5px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                color: showDivider ? accentColor : '#64748b'
+                color: showDivider ? accentColor : '#64748b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
               }}
             >
-              {showDivider ? 'Line: ON' : 'Line: OFF'}
+              {showDivider ? <Eye size={10} /> : <EyeOff size={10} />}
+              <span>{showDivider ? 'Line' : 'No Line'}</span>
             </button>
           </div>
         )}

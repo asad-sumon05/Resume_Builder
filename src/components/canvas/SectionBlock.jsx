@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import EditableText from './EditableText';
-import { ArrowUp, ArrowDown, MoveVertical, ArrowUpToLine, ArrowDownToLine, MoreVertical, FileText, Trash2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, MoveVertical, ArrowUpToLine, ArrowDownToLine, MoreVertical, FileText, Trash2, Minus, Plus } from 'lucide-react';
 
 export default function SectionBlock({
   sectionId,
@@ -12,7 +12,7 @@ export default function SectionBlock({
   className = '',
   style = {}
 }) {
-  const { data, moveSection, moveSectionToPosition, toggleSectionPageBreak, deleteSection, sectionMargins, setSectionColumn, toggleSectionColumn } = useResume();
+  const { data, moveSection, moveSectionToPosition, toggleSectionPageBreak, deleteSection, sectionMargins, setSectionColumn, toggleSectionColumn, updateDeclaration } = useResume();
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -195,6 +195,78 @@ export default function SectionBlock({
             >
               <span>{currentColumn === 'left' ? '⬅ Left' : 'Right ➡'}</span>
             </button>
+          )}
+
+          {/* Spacing Controls for Declaration in Toolbar */}
+          {sectionId === 'declaration' && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                padding: '1px 6px',
+                height: '22px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                color: '#334155',
+                fontSize: '10px',
+                fontWeight: '600'
+              }}
+            >
+              <span style={{ fontSize: '9px', color: '#64748b' }}>↕ Space:</span>
+              <button
+                type="button"
+                title="Decrease Empty Space (-10px)"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const cur = data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 80;
+                  updateDeclaration('emptySpace', Math.max(0, cur - 10));
+                }}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '50%',
+                  width: '16px',
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                  lineHeight: 1
+                }}
+              >
+                <Minus size={9} />
+              </button>
+              <span style={{ fontWeight: '700', color: accentColor, minWidth: '30px', textAlign: 'center' }}>
+                {data.declaration?.emptySpace !== undefined ? `${data.declaration.emptySpace}px` : '80px'}
+              </span>
+              <button
+                type="button"
+                title="Increase Empty Space (+10px)"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const cur = data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 80;
+                  updateDeclaration('emptySpace', cur + 10);
+                }}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '50%',
+                  width: '16px',
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                  lineHeight: 1
+                }}
+              >
+                <Plus size={9} />
+              </button>
+            </div>
           )}
 
           {/* Move Menu Dropdown / Drop-up */}

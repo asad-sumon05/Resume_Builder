@@ -110,7 +110,7 @@ const DEFAULT_RESUME_DATA = {
     signatureImage: null,
     date: '',
     place: '',
-    emptySpace: 48,
+    emptySpace: 80,
     showDivider: false
   },
   sectionColumns: {

@@ -1281,19 +1281,19 @@ export default function EditorPanel() {
                                 Empty Space Above Declaration
                               </label>
                               <span style={{ fontSize: '11px', fontWeight: '700', color: accentColor }}>
-                                {data.declaration?.emptySpace !== undefined ? `${data.declaration.emptySpace}px` : '48px'}
+                                {data.declaration?.emptySpace !== undefined ? `${data.declaration.emptySpace}px` : '80px'}
                               </span>
                             </div>
 
                             {/* Spacing Presets */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
                               {[
-                                { label: 'Compact', value: 24 },
-                                { label: 'Standard', value: 48 },
-                                { label: 'Large', value: 80 },
-                                { label: 'X-Large', value: 120 }
+                                { label: 'Medium', value: 40 },
+                                { label: 'Spacious', value: 80 },
+                                { label: 'Large', value: 140 },
+                                { label: 'Bottom', value: 200 }
                               ].map((preset) => {
-                                const active = (data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 48) === preset.value;
+                                const active = (data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 80) === preset.value;
                                 return (
                                   <button
                                     key={preset.value}
@@ -1323,13 +1323,13 @@ export default function EditorPanel() {
                               <input
                                 type="range"
                                 min={0}
-                                max={200}
-                                step={4}
-                                value={data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 48}
+                                max={250}
+                                step={5}
+                                value={data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 80}
                                 onChange={(e) => updateDeclaration('emptySpace', parseInt(e.target.value, 10))}
                                 style={{ flex: 1, accentColor }}
                               />
-                              <span style={{ fontSize: '10px', color: '#64748b' }}>200px</span>
+                              <span style={{ fontSize: '10px', color: '#64748b' }}>250px</span>
                             </div>
 
                             {/* Subtle Divider Line Toggle */}
