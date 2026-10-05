@@ -125,6 +125,8 @@ export default function ResumeCanvas() {
       const contentHeight = Math.max(maxContentBottom, paper.scrollHeight - 35);
       const pages = Math.max(1, Math.ceil((contentHeight - 15) / A4_HEIGHT));
       setPageCount(pages);
+      paper.setAttribute('data-page-count', String(pages));
+      return pages;
     } finally {
       isPaginatingRef.current = false;
     }
@@ -250,6 +252,7 @@ export default function ResumeCanvas() {
         <div
           ref={paperRef}
           id="resumePaper"
+          data-page-count={pageCount}
           className={`resume-paper template-${template}`}
           style={{
             fontFamily: fontFamily,

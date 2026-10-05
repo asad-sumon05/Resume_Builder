@@ -1423,6 +1423,10 @@ export function ResumeProvider({ children }) {
     const prevBoxShadow = paper.style.boxShadow;
     const prevBorderRadius = paper.style.borderRadius;
     const prevTransition = paper.style.transition;
+    const prevHeight = paper.style.height;
+    const prevMinHeight = paper.style.minHeight;
+    const prevMaxHeight = paper.style.maxHeight;
+    const prevOverflow = paper.style.overflow;
 
     // Temporarily hide all editor-only / interactive elements (.no-print)
     const noPrintEls = paper.querySelectorAll('.no-print');
@@ -1439,36 +1443,97 @@ export function ResumeProvider({ children }) {
     paper.style.borderRadius = '0px';
 
     // Recalculate pagination at 1:1 scale before canvas rendering
+    let pageCount = 1;
     if (typeof window !== 'undefined' && window.__recalculateResumePagination) {
-      window.__recalculateResumePagination(1);
+      pageCount = window.__recalculateResumePagination(1) || 1;
+    }
+    const attrCount = parseInt(paper.getAttribute('data-page-count'), 10);
+    if (!isNaN(attrCount) && attrCount > 0) {
+      pageCount = attrCount;
     }
 
+    const exactTotalHeight = pageCount * 1123;
+    paper.style.height = `${exactTotalHeight}px`;
+    paper.style.minHeight = `${exactTotalHeight}px`;
+    paper.style.maxHeight = `${exactTotalHeight}px`;
+    paper.style.overflow = 'hidden';
+
+    // Allow browser layout and fonts to settle
+    if (document.fonts && document.fonts.ready) {
+      try {
+        await document.fonts.ready;
+      } catch (e) {
+        // ignore font ready errors
+      }
+    }
+    await new Promise(r => setTimeout(r, 60));
+
     try {
-      // ── Step 1: render to Blob via html2pdf ──────────────────────
-      const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = html2pdfModule.default || html2pdfModule;
+      // ── Step 1: Render exact paper snapshot with html2canvas ───────
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default || html2canvasModule;
 
-      const opt = {
-        margin: 0,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          scrollX: 0,
-          windowWidth: 794
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
+      const scale = 2; // High-resolution rendering
+      const canvas = await html2canvas(paper, {
+        scale: scale,
+        useCORS: true,
+        letterRendering: true,
+        logging: false,
+        scrollY: 0,
+        scrollX: 0,
+        windowWidth: 794,
+        width: 794,
+        height: exactTotalHeight
+      });
 
-      const pdfBlob = await html2pdf().set(opt).from(paper).outputPdf('blob');
+      // ── Step 2: Slice canvas page-by-page into jsPDF ───────────────
+      // Ensures EXACT 1:1 page count and layout matching preview (NO phantom pages, NO misplaced sections)
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait'
+      });
 
-      // ── Step 2: embed resume state into PDF metadata via pdf-lib ─
+      const A4_HEIGHT_PX = 1123;
+      const sliceWidth = canvas.width;
+      const sliceHeight = Math.round(A4_HEIGHT_PX * scale);
+
+      for (let i = 0; i < pageCount; i++) {
+        if (i > 0) {
+          doc.addPage('a4', 'portrait');
+        }
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = sliceWidth;
+        pageCanvas.height = sliceHeight;
+        const pageCtx = pageCanvas.getContext('2d');
+
+        // Clean white background
+        pageCtx.fillStyle = '#ffffff';
+        pageCtx.fillRect(0, 0, sliceWidth, sliceHeight);
+
+        // Copy exact slice for this page
+        const sy = Math.round(i * A4_HEIGHT_PX * scale);
+        const sh = Math.min(sliceHeight, canvas.height - sy);
+
+        if (sh > 0) {
+          pageCtx.drawImage(
+            canvas,
+            0, sy, sliceWidth, sh,
+            0, 0, sliceWidth, sh
+          );
+        }
+
+        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+        doc.addImage(pageImgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+      }
+
+      const pdfBytes = doc.output('arraybuffer');
+
+      // ── Step 3: Embed resume state into PDF metadata via pdf-lib ─
       try {
         const { PDFDocument, PDFName, PDFHexString } = await import('pdf-lib');
-        const pdfBytes = await pdfBlob.arrayBuffer();
         const pdfDoc  = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
 
         const { rawObj, base64: payloadB64 } = buildEmbedPayload();
@@ -1505,7 +1570,7 @@ export function ResumeProvider({ children }) {
         const finalBytes = await pdfDoc.save({ useObjectStreams: false });
         const finalBlob  = new Blob([finalBytes], { type: 'application/pdf' });
 
-        // ── Step 3: trigger browser download ──────────────────────
+        // ── Step 4: Trigger browser download ──────────────────────
         const url = URL.createObjectURL(finalBlob);
         const a   = document.createElement('a');
         a.href     = url;
@@ -1515,9 +1580,10 @@ export function ResumeProvider({ children }) {
 
         showToast('PDF ready! ✅ You can re-upload it here to continue editing.');
       } catch (pdfLibErr) {
-        // If pdf-lib fails just download the raw blob
+        // If pdf-lib fails just download the raw blob from jsPDF
         console.warn('pdf-lib metadata embedding failed, saving raw PDF:', pdfLibErr);
-        const url = URL.createObjectURL(pdfBlob);
+        const rawBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(rawBlob);
         const a   = document.createElement('a');
         a.href     = url;
         a.download = filename;
@@ -1527,7 +1593,7 @@ export function ResumeProvider({ children }) {
       }
 
     } catch (err) {
-      console.warn('html2pdf error, fallback to print:', err);
+      console.warn('PDF generation error, fallback to print:', err);
       window.print();
     } finally {
       // Restore on-screen interactive & zoom styles ──────────────
@@ -1536,6 +1602,10 @@ export function ResumeProvider({ children }) {
       paper.style.marginBottom = prevMarginBottom;
       paper.style.boxShadow = prevBoxShadow;
       paper.style.borderRadius = prevBorderRadius;
+      paper.style.height = prevHeight;
+      paper.style.minHeight = prevMinHeight;
+      paper.style.maxHeight = prevMaxHeight;
+      paper.style.overflow = prevOverflow;
 
       // Restore .no-print elements
       noPrintEls.forEach(el => {
