@@ -109,7 +109,9 @@ const DEFAULT_RESUME_DATA = {
     signatureText: '',
     signatureImage: null,
     date: '',
-    place: ''
+    place: '',
+    emptySpace: 48,
+    showDivider: false
   },
   sectionColumns: {
     experience: 'left',

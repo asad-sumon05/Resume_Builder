@@ -1273,6 +1273,76 @@ export default function EditorPanel() {
                               />
                             </div>
                           </div>
+
+                          {/* Empty Space Control */}
+                          <div className="form-group" style={{ marginTop: '12px', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                              <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#1e293b', margin: 0 }}>
+                                Empty Space Above Declaration
+                              </label>
+                              <span style={{ fontSize: '11px', fontWeight: '700', color: accentColor }}>
+                                {data.declaration?.emptySpace !== undefined ? `${data.declaration.emptySpace}px` : '48px'}
+                              </span>
+                            </div>
+
+                            {/* Spacing Presets */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
+                              {[
+                                { label: 'Compact', value: 24 },
+                                { label: 'Standard', value: 48 },
+                                { label: 'Large', value: 80 },
+                                { label: 'X-Large', value: 120 }
+                              ].map((preset) => {
+                                const active = (data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 48) === preset.value;
+                                return (
+                                  <button
+                                    key={preset.value}
+                                    type="button"
+                                    onClick={() => updateDeclaration('emptySpace', preset.value)}
+                                    style={{
+                                      padding: '5px 4px',
+                                      borderRadius: '6px',
+                                      border: active ? `2px solid ${accentColor}` : '1px solid #cbd5e1',
+                                      background: active ? `${accentColor}18` : '#ffffff',
+                                      color: active ? accentColor : '#475569',
+                                      fontSize: '10px',
+                                      fontWeight: active ? '700' : '500',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.15s'
+                                    }}
+                                  >
+                                    {preset.label} ({preset.value}px)
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Range Slider */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ fontSize: '10px', color: '#64748b' }}>0px</span>
+                              <input
+                                type="range"
+                                min={0}
+                                max={200}
+                                step={4}
+                                value={data.declaration?.emptySpace !== undefined ? Number(data.declaration.emptySpace) : 48}
+                                onChange={(e) => updateDeclaration('emptySpace', parseInt(e.target.value, 10))}
+                                style={{ flex: 1, accentColor }}
+                              />
+                              <span style={{ fontSize: '10px', color: '#64748b' }}>200px</span>
+                            </div>
+
+                            {/* Subtle Divider Line Toggle */}
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '11px', color: '#475569', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!data.declaration?.showDivider}
+                                onChange={(e) => updateDeclaration('showDivider', e.target.checked)}
+                                style={{ accentColor }}
+                              />
+                              <span>Add subtle divider line in the empty space</span>
+                            </label>
+                          </div>
                         </div>
                       )}
 
