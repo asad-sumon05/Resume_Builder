@@ -87,7 +87,14 @@ export default function EditorPanel() {
   const handleAddSkill = (e) => {
     if (e.key === 'Enter' && newSkillName.trim()) {
       e.preventDefault();
-      addSkill({ name: newSkillName.trim(), level: 85 });
+      addSkill(newSkillName.trim(), 85);
+      setNewSkillName('');
+    }
+  };
+
+  const handleAddSkillClick = () => {
+    if (newSkillName.trim()) {
+      addSkill(newSkillName.trim(), 85);
       setNewSkillName('');
     }
   };
@@ -376,7 +383,11 @@ export default function EditorPanel() {
                               <div className="entry-card-header">
                                 <div>
                                   <div className="entry-card-title">{exp.title || 'Untitled Position'}</div>
-                                  <div className="entry-card-sub">{exp.company || 'Company'} · {exp.startDate || ''} – {exp.endDate || ''}</div>
+                                  <div className="entry-card-sub">
+                                    {exp.company || 'Company'}
+                                    {exp.location ? ` · ${exp.location}` : ''}
+                                    {exp.startDate || exp.endDate ? ` · ${exp.startDate || ''} – ${exp.endDate || ''}` : ''}
+                                  </div>
                                 </div>
                                 <div className="entry-card-actions">
                                   <button
@@ -395,6 +406,7 @@ export default function EditorPanel() {
                                     <label>Job Title</label>
                                     <input
                                       className="form-input"
+                                      placeholder="e.g. Senior Software Engineer"
                                       value={exp.title || ''}
                                       onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
                                     />
@@ -403,6 +415,7 @@ export default function EditorPanel() {
                                     <label>Company</label>
                                     <input
                                       className="form-input"
+                                      placeholder="e.g. Google / TechCorp"
                                       value={exp.company || ''}
                                       onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
                                     />
@@ -411,9 +424,19 @@ export default function EditorPanel() {
 
                                 <div className="form-row">
                                   <div className="form-group">
+                                    <label>Location / Address</label>
+                                    <input
+                                      className="form-input"
+                                      placeholder="e.g. New York, NY or Remote"
+                                      value={exp.location || ''}
+                                      onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="form-group">
                                     <label>Start Date</label>
                                     <input
                                       className="form-input"
+                                      placeholder="e.g. Jan 2021"
                                       value={exp.startDate || ''}
                                       onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
                                     />
@@ -422,6 +445,7 @@ export default function EditorPanel() {
                                     <label>End Date</label>
                                     <input
                                       className="form-input"
+                                      placeholder="e.g. Present / Dec 2023"
                                       value={exp.endDate || ''}
                                       onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
                                     />
@@ -623,47 +647,65 @@ export default function EditorPanel() {
                       {sec.id === 'skills' && (
                         <div>
                           <div className="form-group" style={{ marginBottom: '12px' }}>
-                            <label>Add Skill (Press Enter)</label>
-                            <input
-                              className="form-input"
-                              placeholder="e.g. Python, Docker, Figma..."
-                              value={newSkillName}
-                              onChange={(e) => setNewSkillName(e.target.value)}
-                              onKeyDown={handleAddSkill}
-                            />
+                            <label>Add Skill (Press Enter or click Add)</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <input
+                                className="form-input"
+                                placeholder="e.g. Python, Docker, Figma..."
+                                value={newSkillName}
+                                onChange={(e) => setNewSkillName(e.target.value)}
+                                onKeyDown={handleAddSkill}
+                                style={{ flex: 1 }}
+                              />
+                              <button
+                                type="button"
+                                className="form-section-add-btn"
+                                onClick={handleAddSkillClick}
+                                style={{ padding: '0 12px', whiteSpace: 'nowrap' }}
+                              >
+                                <Plus size={14} /> Add
+                              </button>
+                            </div>
                           </div>
 
                           <div className="skills-tags" style={{ marginBottom: '16px' }}>
-                            {(data.skills || []).map((skill, idx) => (
-                              <div key={skill.id || idx} className="skill-tag">
-                                <span>{skill.name}</span>
-                                <span
-                                  className="skill-tag-remove"
-                                  onClick={() => removeSkill(skill.id)}
-                                >
-                                  ×
-                                </span>
-                              </div>
-                            ))}
+                            {(data.skills || []).map((skill, idx) => {
+                              const displayName = typeof skill.name === 'object' ? (skill.name?.name || 'Skill') : (skill.name || '');
+                              return (
+                                <div key={skill.id || idx} className="skill-tag">
+                                  <span>{displayName}</span>
+                                  <span
+                                    className="skill-tag-remove"
+                                    onClick={() => removeSkill(skill.id)}
+                                    title="Remove skill"
+                                  >
+                                    ×
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
 
                           {/* Skill Level Sliders */}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {(data.skills || []).map((skill, idx) => (
-                              <div key={skill.id || idx} className="skill-level-wrap">
-                                <span style={{ fontSize: '12px', width: '110px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {skill.name}
-                                </span>
-                                <input
-                                  type="range"
-                                  min="20"
-                                  max="100"
-                                  value={skill.level || 80}
-                                  onChange={(e) => updateSkill(skill.id, 'level', parseInt(e.target.value))}
-                                />
-                                <span className="skill-level-label">{skill.level || 80}%</span>
-                              </div>
-                            ))}
+                            {(data.skills || []).map((skill, idx) => {
+                              const displayName = typeof skill.name === 'object' ? (skill.name?.name || 'Skill') : (skill.name || '');
+                              return (
+                                <div key={skill.id || idx} className="skill-level-wrap">
+                                  <span style={{ fontSize: '12px', width: '110px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {displayName}
+                                  </span>
+                                  <input
+                                    type="range"
+                                    min="20"
+                                    max="100"
+                                    value={typeof skill.level === 'number' ? skill.level : 80}
+                                    onChange={(e) => updateSkill(skill.id, 'level', parseInt(e.target.value))}
+                                  />
+                                  <span className="skill-level-label">{skill.level || 80}%</span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

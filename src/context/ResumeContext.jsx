@@ -152,7 +152,20 @@ export function ResumeProvider({ children }) {
   const [data, setData] = useState(() => {
     try {
       const saved = localStorage.getItem('resumecv_data_v2');
-      return saved ? JSON.parse(saved) : DEFAULT_RESUME_DATA;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.skills)) {
+          parsed.skills = parsed.skills.map(s => {
+            let name = s?.name;
+            if (typeof name === 'object' && name !== null) {
+              name = name.name || 'Skill';
+            }
+            return { ...s, name: String(name || '') };
+          });
+        }
+        return parsed;
+      }
+      return DEFAULT_RESUME_DATA;
     } catch (e) {
       return DEFAULT_RESUME_DATA;
     }
@@ -364,17 +377,42 @@ export function ResumeProvider({ children }) {
   const updateSkill = (id, field, value) => {
     updateData(prev => ({
       ...prev,
-      skills: prev.skills.map(sk => sk.id === id ? { ...sk, [field]: value } : sk)
+      skills: (prev.skills || []).map(sk => {
+        if (sk.id === id) {
+          const val = field === 'name' && typeof value === 'object' && value !== null
+            ? String(value.name || '')
+            : (field === 'name' ? String(value || '') : value);
+          return { ...sk, [field]: val };
+        }
+        return sk;
+      })
     }));
   };
 
   const addSkill = (name = 'New Skill', level = 85) => {
-    const newItem = { id: 'sk-' + Date.now(), name, level };
-    updateData(prev => ({ ...prev, skills: [...prev.skills, newItem] }));
+    let skillName = name;
+    let skillLevel = level;
+    if (typeof name === 'object' && name !== null) {
+      skillName = name.name || 'New Skill';
+      skillLevel = name.level !== undefined ? name.level : 85;
+    }
+    const newItem = {
+      id: 'sk-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      name: String(skillName || 'New Skill'),
+      level: Number(skillLevel) || 85
+    };
+    updateData(prev => ({
+      ...prev,
+      skills: [...(prev.skills || []).map(s => {
+        let n = s?.name;
+        if (typeof n === 'object' && n !== null) n = n.name || 'Skill';
+        return { ...s, name: String(n || '') };
+      }), newItem]
+    }));
   };
 
   const removeSkill = (id) => {
-    updateData(prev => ({ ...prev, skills: prev.skills.filter(s => s.id !== id) }));
+    updateData(prev => ({ ...prev, skills: (prev.skills || []).filter(s => s.id !== id) }));
   };
 
   // Languages handlers
@@ -1086,7 +1124,8 @@ export function ResumeProvider({ children }) {
         margin: 0,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       const pdfBlob = await html2pdf().set(opt).from(paper).outputPdf('blob');
@@ -1263,9 +1302,17 @@ export function ResumeProvider({ children }) {
     });
 
     // ── skills ────────────────────────────────────────────────
-    const skills = normalizeList(raw.skills, 'sk').map(s => ({
-      name: '', level: 80, ...s
-    }));
+    const skills = normalizeList(raw.skills, 'sk').map(s => {
+      let name = s.name;
+      if (typeof name === 'object' && name !== null) {
+        name = name.name || 'Skill';
+      }
+      return {
+        id: s.id || `sk-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        name: String(name || ''),
+        level: typeof s.level === 'number' ? s.level : (parseInt(s.level) || 80)
+      };
+    });
 
     // ── languages ────────────────────────────────────────────
     const languages = normalizeList(raw.languages, 'lang').map(l => ({
