@@ -1115,6 +1115,27 @@ export function ResumeProvider({ children }) {
     const p = data.personal;
     const filename = `${p.firstName || 'Resume'}_${p.lastName || ''}_ResumeCV.pdf`.replace(/\s+/g, '_');
 
+    // ── Save on-screen interactive & zoom styles ─────────────────
+    const prevTransform = paper.style.transform;
+    const prevMarginBottom = paper.style.marginBottom;
+    const prevBoxShadow = paper.style.boxShadow;
+    const prevBorderRadius = paper.style.borderRadius;
+    const prevTransition = paper.style.transition;
+
+    // Temporarily hide all editor-only / interactive elements (.no-print)
+    const noPrintEls = paper.querySelectorAll('.no-print');
+    noPrintEls.forEach(el => {
+      el.setAttribute('data-prev-display', el.style.display || '');
+      el.style.setProperty('display', 'none', 'important');
+    });
+
+    // Reset paper to true 1:1 unscaled A4 dimensions (prevents zoom from shrinking width & causing huge side margins)
+    paper.style.transition = 'none';
+    paper.style.transform = 'none';
+    paper.style.marginBottom = '0px';
+    paper.style.boxShadow = 'none';
+    paper.style.borderRadius = '0px';
+
     try {
       // ── Step 1: render to Blob via html2pdf ──────────────────────
       const html2pdfModule = await import('html2pdf.js');
@@ -1123,7 +1144,14 @@ export function ResumeProvider({ children }) {
       const opt = {
         margin: 0,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          scrollX: 0,
+          windowWidth: 794
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
@@ -1194,6 +1222,20 @@ export function ResumeProvider({ children }) {
     } catch (err) {
       console.warn('html2pdf error, fallback to print:', err);
       window.print();
+    } finally {
+      // ── Restore on-screen interactive & zoom styles ──────────────
+      paper.style.transition = prevTransition;
+      paper.style.transform = prevTransform;
+      paper.style.marginBottom = prevMarginBottom;
+      paper.style.boxShadow = prevBoxShadow;
+      paper.style.borderRadius = prevBorderRadius;
+
+      // Restore .no-print elements
+      noPrintEls.forEach(el => {
+        const prev = el.getAttribute('data-prev-display');
+        el.removeAttribute('data-prev-display');
+        el.style.display = prev;
+      });
     }
   };
 
