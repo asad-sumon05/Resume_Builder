@@ -1442,6 +1442,11 @@ export function ResumeProvider({ children }) {
     paper.style.boxShadow = 'none';
     paper.style.borderRadius = '0px';
 
+    // Recalculate pagination at true 1:1 scale so all section margins and shifts match unscaled A4 perfectly
+    if (window.__recalculateResumePagination) {
+      window.__recalculateResumePagination(1);
+    }
+
     // Lock total height to exact pageCount * 1122px (prevents html2pdf sub-pixel rounding from creating a phantom 3rd page)
     const pageCount = parseInt(paper.getAttribute('data-page-count') || '1', 10);
     const targetHeight = pageCount * 1122;
@@ -1461,7 +1466,7 @@ export function ResumeProvider({ children }) {
     await new Promise(r => setTimeout(r, 60));
 
     try {
-      // ── Step 1: Render via html2pdf (clean CSS/legacy pagebreak, NO avoid-all to prevent rogue empty gaps) ──
+      // ── Step 1: Render via html2pdf (clean 1:1 pixel rendering, mode: [] prevents rogue div injection) ──
       const html2pdfModule = await import('html2pdf.js');
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
@@ -1477,7 +1482,7 @@ export function ResumeProvider({ children }) {
           windowWidth: 794
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        pagebreak: { mode: [] }
       };
 
       const pdfBlob = await html2pdf().set(opt).from(paper).outputPdf('blob');

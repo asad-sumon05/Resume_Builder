@@ -33,8 +33,8 @@ export default function ResumeCanvas() {
     isPaginatingRef.current = true;
 
     try {
-      const A4_HEIGHT = 1123;
-      const PAGE_TOP_GAP = 36; // comfortable top margin when section starts on a new page
+      const A4_HEIGHT = 1122;
+      const PAGE_TOP_GAP = 48; // comfortable top margin when section starts on a new page (matches standard 48px top padding)
       const MIN_SECTION_HEADROOM = 140; // section needs at least 140px to stay on current page without being crowded
 
       const paperRect = paper.getBoundingClientRect();
@@ -280,7 +280,7 @@ export default function ResumeCanvas() {
             fontSize: getFontSizeValue(),
             lineHeight: getLineHeightValue(),
             transform: `scale(${zoom})`,
-            minHeight: `${pageCount * 1123}px`,
+            minHeight: `${pageCount * 1122}px`,
             position: 'relative',
             marginBottom: `${(1 - zoom) * -500}px`
           }}
@@ -293,7 +293,7 @@ export default function ResumeCanvas() {
               <div
                 key={`page-break-${i}`}
                 className="canvas-page-break no-print"
-                style={{ top: `${(i + 1) * 1123}px` }}
+                style={{ top: `${(i + 1) * 1122}px` }}
               >
                 <div className="canvas-page-break-badge">
                   <span>📄</span> Page {i + 2} of {pageCount} (A4) Begins Here
@@ -319,7 +319,7 @@ export default function ResumeCanvas() {
               <div
                 key={`page-tag-${i}`}
                 className="canvas-page-number-tag no-print"
-                style={{ top: `${i * 1123 + 1090}px` }}
+                style={{ top: `${i * 1122 + 1090}px` }}
               >
                 <span>Page {i + 1} of {pageCount} (A4)</span>
                 {i > 0 && (
