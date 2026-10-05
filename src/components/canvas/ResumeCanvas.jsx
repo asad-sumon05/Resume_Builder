@@ -64,9 +64,35 @@ export default function ResumeCanvas() {
         const isManualBreak = !!(data?.pageBreaks && data.pageBreaks[sectionId]);
         let shouldBreak = false;
 
-        // Only apply page-break shift when user explicitly toggled manual page break
         if (isManualBreak && offsetInPage > 60) {
           shouldBreak = true;
+        } else if (!isManualBreak) {
+          // Compact / self-contained sections: References, Hobbies, Declaration, Languages, Skills, Certifications, Awards, Volunteering, Custom sections
+          const isCompactSection = [
+            'references',
+            'hobbies',
+            'declaration',
+            'languages',
+            'skills',
+            'certifications',
+            'awards',
+            'volunteer'
+          ].includes(sectionId) || (sectionId.startsWith('custom_') && height <= 320);
+
+          if (isCompactSection) {
+            // If the section doesn't have enough room on the current page to contain its content,
+            // or leaves less than 70px, cleanly move it to the next page!
+            if (naturalTop + height > (pageBottom - 20) || spaceLeft < 70) {
+              shouldBreak = true;
+            }
+          } else {
+            // Primary multi-entry sections (experience, education, projects):
+            // Only move to next page if there is barely any room for the header (orphan header prevention < 110px).
+            // Otherwise let them start on the current page so no massive empty gaps are left below summary or previous sections.
+            if (spaceLeft < 110) {
+              shouldBreak = true;
+            }
+          }
         }
 
         if (shouldBreak) {
@@ -109,7 +135,7 @@ export default function ResumeCanvas() {
         if (b > maxContentBottom) maxContentBottom = b;
       });
 
-      const otherBlocks = paper.querySelectorAll('header, aside, .resume-header');
+      const otherBlocks = paper.querySelectorAll('header, aside, .resume-header, .declaration-empty-space, main, footer');
       otherBlocks.forEach(el => {
         const rect = el.getBoundingClientRect();
         const b = (rect.bottom - paperRect.top) / currentZoom;
