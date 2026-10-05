@@ -64,22 +64,9 @@ export default function ResumeCanvas() {
         const isManualBreak = !!(data?.pageBreaks && data.pageBreaks[sectionId]);
         let shouldBreak = false;
 
+        // Only apply page-break shift when user explicitly toggled manual page break
         if (isManualBreak && offsetInPage > 60) {
           shouldBreak = true;
-        } else if (!isManualBreak) {
-          // Only break the ENTIRE section to the next page if there is barely any room left
-          // (orphan header prevention: less than 100px means not even the header + 1 entry could fit).
-          // Otherwise, allow the section to start naturally so no massive empty gaps are left!
-          const isSingleAtomicBlock = sectionId === 'declaration';
-          if (isSingleAtomicBlock) {
-            if (naturalTop + height > (pageBottom - 25) && spaceLeft < 140) {
-              shouldBreak = true;
-            }
-          } else {
-            if (spaceLeft < 100) {
-              shouldBreak = true;
-            }
-          }
         }
 
         if (shouldBreak) {
@@ -96,29 +83,10 @@ export default function ResumeCanvas() {
         }
       });
 
-      // Paginate individual items within multi-entry sections so items don't get cut in half,
-      // without pushing entire 500px sections to the next page!
+      // Clear any artificial entry margins so no gaps appear between jobs, degrees, or items
       const entryElements = Array.from(paper.querySelectorAll('.resume-entry, .experience-item, .education-item, .project-item, .custom-section-item'));
       entryElements.forEach(entryEl => {
-        const entryRect = entryEl.getBoundingClientRect();
-        const entryTop = (entryRect.top - paperRect.top) / currentZoom;
-        const entryHeight = entryRect.height / currentZoom;
-
-        const currentEntryMargin = parseFloat(entryEl.style.marginTop) || 0;
-        const naturalEntryTop = entryTop - currentEntryMargin;
-
-        const entryPageIndex = Math.floor(naturalEntryTop / A4_HEIGHT);
-        const entryPageBottom = (entryPageIndex + 1) * A4_HEIGHT;
-
-        // If this entry straddles the page boundary (starts on current page, but spills past boundary)
-        if (naturalEntryTop < (entryPageBottom - 25) && (naturalEntryTop + entryHeight) > (entryPageBottom - 15)) {
-          const entryShift = Math.max(0, (entryPageBottom + PAGE_TOP_GAP) - naturalEntryTop);
-          if (entryShift > 0 && entryShift < A4_HEIGHT) {
-            entryEl.style.marginTop = `${Math.round(entryShift)}px`;
-          } else {
-            entryEl.style.marginTop = '';
-          }
-        } else {
+        if (entryEl.style.marginTop) {
           entryEl.style.marginTop = '';
         }
       });
