@@ -67,16 +67,16 @@ export default function ResumeCanvas() {
         if (isManualBreak && offsetInPage > 60) {
           shouldBreak = true;
         } else if (!isManualBreak) {
-          // If the section doesn't fit on this page OR
-          // leaves less than MIN_SECTION_HEADROOM (140px) on current page,
-          // MOVE THE ENTIRE SECTION TO THE NEXT PAGE!
-          if (height <= 1000) {
-            if (naturalTop + height > (pageBottom - 25) || spaceLeft < MIN_SECTION_HEADROOM) {
+          // Only break the ENTIRE section to the next page if there is barely any room left
+          // (orphan header prevention: less than 100px means not even the header + 1 entry could fit).
+          // Otherwise, allow the section to start naturally so no massive empty gaps are left!
+          const isSingleAtomicBlock = sectionId === 'declaration';
+          if (isSingleAtomicBlock) {
+            if (naturalTop + height > (pageBottom - 25) && spaceLeft < 140) {
               shouldBreak = true;
             }
           } else {
-            // Extra tall section (> 1000px): if header + 1st item cannot fit, move to next page
-            if (spaceLeft < 160) {
+            if (spaceLeft < 100) {
               shouldBreak = true;
             }
           }
@@ -93,6 +93,33 @@ export default function ResumeCanvas() {
           }
         } else {
           el.style.marginTop = '';
+        }
+      });
+
+      // Paginate individual items within multi-entry sections so items don't get cut in half,
+      // without pushing entire 500px sections to the next page!
+      const entryElements = Array.from(paper.querySelectorAll('.resume-entry, .experience-item, .education-item, .project-item, .custom-section-item'));
+      entryElements.forEach(entryEl => {
+        const entryRect = entryEl.getBoundingClientRect();
+        const entryTop = (entryRect.top - paperRect.top) / currentZoom;
+        const entryHeight = entryRect.height / currentZoom;
+
+        const currentEntryMargin = parseFloat(entryEl.style.marginTop) || 0;
+        const naturalEntryTop = entryTop - currentEntryMargin;
+
+        const entryPageIndex = Math.floor(naturalEntryTop / A4_HEIGHT);
+        const entryPageBottom = (entryPageIndex + 1) * A4_HEIGHT;
+
+        // If this entry straddles the page boundary (starts on current page, but spills past boundary)
+        if (naturalEntryTop < (entryPageBottom - 25) && (naturalEntryTop + entryHeight) > (entryPageBottom - 15)) {
+          const entryShift = Math.max(0, (entryPageBottom + PAGE_TOP_GAP) - naturalEntryTop);
+          if (entryShift > 0 && entryShift < A4_HEIGHT) {
+            entryEl.style.marginTop = `${Math.round(entryShift)}px`;
+          } else {
+            entryEl.style.marginTop = '';
+          }
+        } else {
+          entryEl.style.marginTop = '';
         }
       });
 

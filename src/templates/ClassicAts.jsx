@@ -106,7 +106,7 @@ export default function ClassicAts() {
       return (
         <SectionBlock key="projects" sectionId="projects" title="Projects" accentColor={accentColor}>
           {(data.projects || []).map((proj) => (
-            <div key={proj.id} style={{ marginBottom: '10px' }}>
+            <div key={proj.id} className="project-item resume-entry" style={{ marginBottom: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ fontSize: '11px', fontWeight: '700', color: '#1a1a2e' }}>
                   <EditableText value={proj.name} onChange={(v) => updateProject(proj.id, 'name', v)} placeholder="Project Name" />{' '}

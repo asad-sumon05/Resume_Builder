@@ -81,7 +81,7 @@ export default function EducationItem({ edu, accentColor = '#2DC08D', variant = 
   // ==================== 1. MODERN PRO ====================
   if (variant === 'modern') {
     return (
-      <div style={{ marginBottom: '14px' }}>
+      <div className="education-item resume-entry" style={{ marginBottom: '14px' }}>
         {/* Line 1: Degree & Year side by side */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#0f172a' }}>
@@ -122,7 +122,7 @@ export default function EducationItem({ edu, accentColor = '#2DC08D', variant = 
   // ==================== 2. CLASSIC ATS ====================
   if (variant === 'classic') {
     return (
-      <div style={{ marginBottom: '12px' }}>
+      <div className="education-item resume-entry" style={{ marginBottom: '12px' }}>
         {/* Line 1: Degree & Year side by side */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
           <span style={{ fontSize: '11px', fontWeight: '700', color: '#1a1a2e' }}>
@@ -163,7 +163,7 @@ export default function EducationItem({ edu, accentColor = '#2DC08D', variant = 
   // ==================== 3. MINIMALIST ====================
   if (variant === 'minimal') {
     return (
-      <div style={{ display: 'block', marginBottom: '12px' }}>
+      <div className="education-item resume-entry" style={{ display: 'block', marginBottom: '12px' }}>
         {/* Line 1: Degree & Year side by side */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
           <span style={{ fontSize: '11px', fontWeight: '700', color: '#111827' }}>
@@ -204,7 +204,7 @@ export default function EducationItem({ edu, accentColor = '#2DC08D', variant = 
   // ==================== 4. TIMELINE ====================
   if (variant === 'timeline') {
     return (
-      <div style={{ display: 'block', position: 'relative', marginBottom: '14px' }}>
+      <div className="education-item resume-entry" style={{ display: 'block', position: 'relative', marginBottom: '14px' }}>
         <div
           style={{
             position: 'absolute',
@@ -265,7 +265,7 @@ export default function EducationItem({ edu, accentColor = '#2DC08D', variant = 
   // ==================== 5. EXECUTIVE ====================
   if (variant === 'executive') {
     return (
-      <div style={{ display: 'block', marginBottom: '12px' }}>
+      <div className="education-item resume-entry" style={{ display: 'block', marginBottom: '12px' }}>
         {/* Line 1: Degree & Year side by side */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
           <div style={{ fontSize: '10.5px', fontWeight: '700', color: '#0f172a' }}>
@@ -305,7 +305,7 @@ export default function EducationItem({ edu, accentColor = '#2DC08D', variant = 
 
   // ==================== 6. TECH DARK ====================
   return (
-    <div style={{ display: 'block', marginBottom: '10px', background: '#161b22', padding: '8px 10px', borderRadius: '4px' }}>
+    <div className="education-item resume-entry" style={{ display: 'block', marginBottom: '10px', background: '#161b22', padding: '8px 10px', borderRadius: '4px' }}>
       {/* Line 1: Degree & Year side by side */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
         <div style={{ fontSize: '10px', fontWeight: '700', color: '#f0f6fc' }}>

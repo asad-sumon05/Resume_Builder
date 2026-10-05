@@ -233,7 +233,7 @@ export default function ModernPro() {
       return (
         <SectionBlock key="experience" sectionId="experience" title="Work Experience" accentColor={accentColor}>
           {data.experience.map((exp) => (
-            <div key={exp.id} style={{ display: 'block', marginBottom: '16px' }}>
+            <div key={exp.id} className="experience-item resume-entry" style={{ display: 'block', marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <EditableText
                   value={exp.title}
@@ -346,7 +346,7 @@ export default function ModernPro() {
       return (
         <SectionBlock key="projects" sectionId="projects" title="Featured Projects" accentColor={accentColor}>
           {data.projects.map((proj) => (
-            <div key={proj.id} style={{ marginBottom: '12px' }}>
+            <div key={proj.id} className="project-item resume-entry" style={{ marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <EditableText value={proj.name} onChange={(v) => updateProject(proj.id, 'name', v)} placeholder="Project Name" style={{ fontSize: '11px', fontWeight: '700', color: '#0f172a' }} />
                 {proj.url && (
